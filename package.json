@@ -12,12 +12,12 @@
     "aws-sdk": "^2.168.0",
     "chai": "^4.1.2",
     "chance.js": "0.0.1",
-    "dotenv": "^4.0.0",
     "faker": "^4.1.0",
     "mocha": "^4.0.1",
     "supertest": "^3.0.0"
   },
   "dependencies": {
+    "dotenv": "^4.0.0",
     "axios": "^0.17.1",
     "express": "^4.16.2",
     "request": "^2.83.0",
