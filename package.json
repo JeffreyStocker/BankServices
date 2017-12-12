@@ -1,0 +1,25 @@
+{
+  "name": "thesis",
+  "version": "1.0.0",
+  "description": "Recreation of Venmo",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chance.js": "0.0.1",
+    "dotenv": "^4.0.0",
+    "mocha": "^4.0.1",
+    "supertest": "^3.0.0"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.168.0",
+    "axios": "^0.17.1",
+    "express": "^4.16.2",
+    "request": "^2.83.0",
+    "statsd": "^0.8.0"
+  }
+}
