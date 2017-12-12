@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "aws-sdk": "^2.168.0",
     "chai": "^4.1.2",
     "chance.js": "0.0.1",
     "dotenv": "^4.0.0",
@@ -16,7 +17,6 @@
     "supertest": "^3.0.0"
   },
   "dependencies": {
-    "aws-sdk": "^2.168.0",
     "axios": "^0.17.1",
     "express": "^4.16.2",
     "request": "^2.83.0",
