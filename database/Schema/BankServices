@@ -1,0 +1,52 @@
+-- Database: BankServices
+
+-- DROP DATABASE "BankServices";
+
+
+Drop table "banks" CASCADE;
+Drop table "users" CASCADE;
+Drop table "transactions" CASCADE;
+Drop table "plaid_items" CASCADE;
+Drop table "accounts" CASCADE;
+
+CREATE TABLE "banks" (
+"id_bank"  SERIAL ,
+"bankName" VARCHAR(50) ,
+PRIMARY KEY ("id_bank")
+);
+
+CREATE TABLE "accounts" (
+"id_account"  SERIAL ,
+"bank_id" INTEGER ,
+"plaid_access_token" VARCHAR(20) ,
+"plaid_account_id" VARCHAR(20) ,
+"plaid_item_id" INTEGER ,
+-- "stripe_account_token" VARCHAR(20) ,
+-- "stripe_customer_id" VARCHAR(20) ,
+PRIMARY KEY ("id_account")
+);
+
+CREATE TABLE "users" (
+"id_user" INTEGER ,
+"account_id" INTEGER ,
+PRIMARY KEY ("id_user")
+);
+
+CREATE TABLE "transactions" (
+"id_transaction" INTEGER ,
+"user_id" INTEGER ,
+"status" VARCHAR(20) ,
+"amount" DECIMAL ,
+PRIMARY KEY ("id_transaction")
+);
+
+CREATE TABLE "plaid_items" (
+"id_item"  SERIAL ,
+"item_id" VARCHAR(20) ,
+PRIMARY KEY ("id_item")
+);
+
+ALTER TABLE "accounts" ADD FOREIGN KEY ("bank_id") REFERENCES "banks" ("id_bank");
+ALTER TABLE "accounts" ADD FOREIGN KEY ("plaid_item_id") REFERENCES "plaid_Items" ("id_item");
+ALTER TABLE "users" ADD FOREIGN KEY ("account_id") REFERENCES "accounts" ("id_account");
+ALTER TABLE "transactions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id_user");
