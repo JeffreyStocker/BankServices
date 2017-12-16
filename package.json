@@ -4,6 +4,7 @@
   "description": "Recreation of Venmo",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -17,10 +18,12 @@
     "supertest": "^3.0.0"
   },
   "dependencies": {
-    "dotenv": "^4.0.0",
     "axios": "^0.17.1",
+    "dotenv": "^4.0.0",
+    "elasticsearch": "^14.0.0",
     "express": "^4.16.2",
     "request": "^2.83.0",
+    "sequelize": "^4.28.1",
     "statsd": "^0.8.0"
   }
 }
