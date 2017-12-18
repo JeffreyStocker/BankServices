@@ -1,5 +1,9 @@
 var Consumer = require('sqs-consumer'); //https://www.npmjs.com/package/sqs-consumer
 var AWS = require('aws-sdk');
+if (!process.env.PORT) {
+  var dotenv= require('dotenv').config();
+}
+
 
 AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
 

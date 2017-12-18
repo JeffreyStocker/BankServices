@@ -1,4 +1,6 @@
-const env = require('dotenv').config();
+if (!!process.env.PORT) {
+  var dotenv= require('dotenv').config();
+}
 const express = require('express');
 // var elastic = require ('./elasticsearch/elasticsearch.js');
 const queue = require ('./queues/queue.js');
