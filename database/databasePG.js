@@ -16,7 +16,10 @@ const pool = new Pool();
 pool.connect()
 .then(data=> {
   console.log('DB Connected');
-  console.log(createTransaction(100000001, 1, 500, 'tes'))
+  console.log(createTransaction(100000005, 1, 5432, 'test'))
+  console.log(findByTransactionID(100000002, (err, data) => console.log(err, data)))
+  // console.log(findByTransactionID(100000003, (err, data) => console.log(err, data)))
+  // console.log(findByTransactionID(100000001, (err, data) => console.log(err, data)))
   // console.log(findByTransactionID(100000000, (err, data) => console.log(err, data)))
 
 })
@@ -25,9 +28,9 @@ pool.connect()
 })
 
 
-
+//id_transaction, user_id, status, amount)
 createTransaction = function (transactionID, userID, amount, status) {
-  pool.query(`insert into transactions (id_transaction, user_id, status, amount) VALUES (${transactionID}, ${userID}, ${status}, ${amount});`, (err, results) => {
+  pool.query(`insert into "transactions" VALUES (${transactionID}, ${userID}, '${status}', ${amount});`, (err, results) => {
     console.log(err, results)
     if (err) {
       return err;
