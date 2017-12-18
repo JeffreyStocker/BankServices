@@ -7,7 +7,7 @@ memcached.set('test', 'here', 20, function (err, succ) {
   if (err) {
     console.log(err)
   } else {
-    console.log('sucess', succ)
+    console.log('memcache:', succ)
 
   }
 })
