@@ -18,7 +18,7 @@ module.exports.sendMessageToQueue = function (message, callback) {
 }
 
 
-for (var i =0; i< 30; i ++) {
+for (var i = 0; i < 30; i ++) {
   var data = {
     transactionID: Math.floor(Math.random()*200000),
     route: 'cashout',
@@ -27,7 +27,7 @@ for (var i =0; i< 30; i ++) {
   }
   module.exports.sendMessageToQueue(data, (err, data) => {
     if (err) {
-      console.log('ERR', err);
+      console.log('Send Messages to Queue Error', err);
     } else {
       console.log(data);
     }
