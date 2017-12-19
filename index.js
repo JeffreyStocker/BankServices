@@ -2,9 +2,9 @@ if (!!process.env.PORT) {
   var dotenv= require('dotenv').config();
 }
 const express = require('express');
-// var elastic = require ('./elasticsearch/elasticsearch.js');
+var elastic = require ('./elasticsearch/elasticsearch.js');
 const queue = require ('./queues/queue.js');
-const axios = require ('axios');
+// const axios = require ('axios');
 
 const port = process.env.port || 8080;
 
