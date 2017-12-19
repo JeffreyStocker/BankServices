@@ -4,7 +4,6 @@ if (!process.env.PORT) {
   var dotenv= require('dotenv').config();
 }
 
-
 AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
 
 var sqsURL = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices'
@@ -14,8 +13,7 @@ var sqs = new AWS.SQS({
 })
 
 
-
-module.exports.sendMessageToQueue = function (message, callback) {
+var sendMessageToQueue = function (message, callback) {
   var msg = {payload: message};
   var params = {
     MessageBody: JSON.stringify(msg),
@@ -23,7 +21,8 @@ module.exports.sendMessageToQueue = function (message, callback) {
   }
   sqs.sendMessage(params, callback)
 }
-module.exports.getDataFromQueue = function () {
+
+var getDataFromQueue = function () {
   console.log('polling queue')
   var request = Consumer.create({
     queueUrl: process.env.SQS_URL,
@@ -39,9 +38,11 @@ module.exports.getDataFromQueue = function () {
       return done();
     }
   });
+
   request.on('error', err => {
     console.log('error', err)
   })
+
   var startTime = new Date();
   startTime = startTime.valueOf();
   request.start();
@@ -49,18 +50,24 @@ module.exports.getDataFromQueue = function () {
   request.on('error', function (err) {
     console.log(err);
   });
+
   request.on('empty', function () {
     console.log('queue is empty')
     })
   }
 
-  // module.exports.sendMessageToQueue('test', (err, data) => {
-  //   if (err) {
-  //     console.log('ERR', err);
-  //   } else {
-  //     console.log(data);
-  //   }
-  // })
+
+module.exports.sendMessageToQueue = sendMessageToQueue
+module.exports.getDataFromQueue = getDataFromQueue
+
+///////tests//////////
+getDataFromQueue()
 
 
-  module.exports.getDataFromQueue()
+//sendMessageToQueue('test', (err, data) => {
+//   if (err) {
+//     console.log('ERR', err);
+//   } else {
+//     console.log(data);
+//   }
+// })
