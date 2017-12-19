@@ -37,6 +37,7 @@ CREATE TABLE "transactions" (
 "user_id" INTEGER ,
 "status" VARCHAR(20) ,
 "amount" DECIMAL ,
+timestamp timestamp WITH TIME ZONE
 PRIMARY KEY ("id_transaction")
 );
 
