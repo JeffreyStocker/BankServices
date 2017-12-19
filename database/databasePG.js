@@ -27,7 +27,7 @@ pool.connect()
 
 
 //id_transaction, user_id, status, amount)
-createTransaction = function (transactionID, userID, amount, status) {
+var createTransaction = function (transactionID, userID, amount, status) {
   pool.query(`insert into "transactions" VALUES (${transactionID}, ${userID}, '${status}', ${amount});`, (err, results) => {
     console.log(err, results)
     if (err) {
@@ -38,7 +38,7 @@ createTransaction = function (transactionID, userID, amount, status) {
   })
 }
 
-updateTransactionStatus = function (transactionID, status) {
+var updateTransactionStatus = function (transactionID, status) {
   pool.query(
     `update transactions
     set status = '${status}'
@@ -53,7 +53,7 @@ updateTransactionStatus = function (transactionID, status) {
   })
 }
 
-findByUserID = function (userID, callback) {
+var findByUserID = function (userID, callback) {
   if (!userID || typeof userID !== 'number') { return undefined }
   pool.query(
     'SELECT * from transactions \
@@ -69,7 +69,7 @@ findByUserID = function (userID, callback) {
   })
 }
 
-findByTransactionID = function (transactionID, callback) {
+var findByTransactionID = function (transactionID, callback) {
   if (!transactionID || typeof transactionID !== 'number') { return undefined }
   pool.query(
     'SELECT * from transactions \
@@ -95,13 +95,6 @@ findByTransactionID = function (transactionID, callback) {
 //   pool.end()
 // })
 
-// module.exports.query = query = async function (query) {
-//   var res = await client.query ('select count(*) from users')
-
-
-// }
-
-// query();
 
 module.exports.createTransaction = createTransaction;
 module.exports.findByUserID = findByUserID;
