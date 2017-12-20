@@ -39,19 +39,19 @@ createIndex('log')  /// already created // uncomment to create
 // }
 // mapping('log')
 
-// var ping = module.exports.ping = function () {
-//   client.ping({
-//     // ping usually has a 3000ms timeout
-//     requestTimeout: 1000
-//   }, function (error) {
-//     if (error) {
-//       // console.trace('elasticsearch cluster is down!');
-//       console.log('elasticsearch cluster is down!');
-//     } else {
-//       console.log('All is well');
-//     }
-//   });
-// }
+var ping = module.exports.ping = function () {
+  client.ping({
+    // ping usually has a 3000ms timeout
+    requestTimeout: 1000
+  }, function (error) {
+    if (error) {
+      // console.trace('elasticsearch cluster is down!');
+      console.log('elasticsearch cluster is down!');
+    } else {
+      console.log('All is well');
+    }
+  });
+}
 
 var addRecord = function (data) {
   //https://blog.raananweber.com/2015/11/24/simple-autocomplete-with-elasticsearch-and-node-js/
