@@ -31,12 +31,10 @@ PRIMARY KEY ("id_account")
 -- "Possible types: public, access, processor
 -- "Possible environments: sandbox, development, production
 -- "For example: access-development-7c69d345-hda9-ka68-ahs3-e9317406a2
--- So max of 56 char for processor and development
+-- So max of 58 char for processor and development
 -- plaid_item_id example: 7KJ5EpqrRbtlR31BrB5JUlBgxLKWrqsgzQXgj  (char 37)
 -- plaid_account_id example: "QKKzevvp33HxPWpoqn6rI13BxW4awNSjnw4xv" (char 37)
 -- plaid_account_id example: "vokyE5Rn6vHKqDLRXEn5fne7LwbKPLIXGK98d" (char 37)
-
-
 
 CREATE TABLE "users" (
 "id_user" INTEGER ,
