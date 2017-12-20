@@ -25,6 +25,7 @@
     "express": "^4.16.2",
     "memcached": "^2.2.2",
     "pg": "^7.4.0",
+    "plaid": "^2.2.0",
     "request": "^2.83.0",
     "sequelize": "^4.28.1",
     "sqs-consumer": "^3.8.0",
