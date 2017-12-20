@@ -27,23 +27,19 @@ for (var i = 0; i < amountToAdd; i ++) {
   }
   let currentCount = i + start;
 
-  let currentCount = i + 1;
-  if (currentCount <= 9000005 && currentCount >= 8999997) {
-    console.log (currentCount)
-  }
   let userID = currentCount;
   let transactionID = currentCount;
   let status = 'good';
   let amount = Math.floor(Math.random()*300000)/100;
   let account = createRandomNumberUpToIntiger();
 
-  let id_accounts = currentCount;
+  let id_accounts = currentCount;  //length 37
   let bankID = returnRandomNumberUpToMax(allBanksLength);
-  let plaid_access_token = createRandomNumberUpToIntiger();
-  let plaid_account_ID = createRandomNumberUpToIntiger();
+  let plaid_access_token = createPlaidRandomFakeToken(); // length  56
+  let plaid_account_ID = createRandomString(); //length 37
 
   let plaidID = currentCount;
-  let plaid_itemID = createRandomNumberUpToIntiger();
+  let plaid_itemID = createRandomString();
 
   transactions.write (transactionID + "|" + userID  + "|" + status  + "|" + amount + "\n");
   plaidItems.write (plaidID + "|" + plaid_itemID + "\n");
@@ -70,4 +66,55 @@ var returnRandomNumberUpToMax = function (max = 1) {
 
 var createRandomNumberUpToIntiger = function () {
   return Math.floor((Math.random()* 2147483646) + 1)
+}
+
+var createRandomString = function (length = 37, lowerCase = false) {
+  if (lowerCase) {
+    var possibilities = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  } else {
+    var possibilities = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  }
+  var possLength = possibilities.length;
+  var output = '';
+  for (var i = 0; i < length; i ++) {
+    output+= possibilities[Math.floor(Math.random() * possLength)];
+  }
+  return output;
+}
+
+var pickRandom = function (input) {
+  var keys;
+  if (typeof input === 'object') {
+    keys = Object.keys(input);
+  } else {
+    keys = input;
+  }
+  return input[keys[Math.floor(Math.random() * keys.length)]];
+}
+
+var createPlaidRandomFakeToken = function (accessRandom = false) {
+  //"plaid_access_token follow this format:  <type>-<environment>-<8 hex chars>-<4 hex chars>-<4 hex chars>-<4 hex chars>-<12 hex chars>.
+  // -- "Possible types: public, access, processor
+  // -- "Possible environments: sandbox, development, production
+  // -- "For example: access-development-7c69d345-hda9-ka68-ahs3-e9317406a2
+  // -- So max of 56 char for processor and development
+  var envPoss = ['sandbox', 'development', 'production']
+  var accessPoss = ['public', 'access', 'processor']
+  var envPoss = ['sandbox']
+  var accessPoss = ['access']
+  var char8 = createRandomString(8);
+  var char4a = createRandomString(4);
+  var char4b = createRandomString(4);
+  var char4c = createRandomString(4);
+  var char12 = createRandomString(12);
+
+  if (!!accessRandom) {
+    var env = pickRandom(envPoss);
+    var access = pickRandom(accessPoss);
+  } else {
+    var env = 'sandbox';
+    var access = 'access';
+  }
+  var token = `${env}-${access}-${char8}-${char4a}-${char4b}-${char4c}-${char12}`;
+  return token
 }

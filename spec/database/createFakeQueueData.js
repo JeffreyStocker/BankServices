@@ -25,7 +25,7 @@ module.exports.sendMessageToQueue = function (message, callback) {
 for (var i = 0; i < 1; i ++) {
   var data = {
     transactionID: Math.floor(Math.random()*200000),
-    route: 'cashout',
+    route: !!Math.floor(Math.random*1) ? 'cashout' : 'withdraw',
     userID: Math.floor(Math.random()*200000),
     amount: Math.floor(Math.random()*300000)/100
   }
