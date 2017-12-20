@@ -18,13 +18,25 @@ PRIMARY KEY ("id_bank")
 CREATE TABLE "accounts" (
 "id_account"  SERIAL ,
 "bank_id" INTEGER ,
-"plaid_access_token" VARCHAR(20) ,
-"plaid_account_id" VARCHAR(20) ,
-"plaid_item_id" INTEGER ,
+
+"plaid_access_token" VARCHAR(60) ,
+"plaid_account_id" VARCHAR(38) ,
+"plaid_item_id" VARCHAR(38) ,
 -- "stripe_account_token" VARCHAR(20) ,
 -- "stripe_customer_id" VARCHAR(20) ,
 PRIMARY KEY ("id_account")
 );
+
+-- "plaid_access_token follow this format:  <type>-<environment>-<8 hex chars>-<4 hex chars>-<4 hex chars>-<4 hex chars>-<12 hex chars>.
+-- "Possible types: public, access, processor
+-- "Possible environments: sandbox, development, production
+-- "For example: access-development-7c69d345-hda9-ka68-ahs3-e9317406a2
+-- So max of 56 char for processor and development
+-- plaid_item_id example: 7KJ5EpqrRbtlR31BrB5JUlBgxLKWrqsgzQXgj  (char 37)
+-- plaid_account_id example: "QKKzevvp33HxPWpoqn6rI13BxW4awNSjnw4xv" (char 37)
+-- plaid_account_id example: "vokyE5Rn6vHKqDLRXEn5fne7LwbKPLIXGK98d" (char 37)
+
+
 
 CREATE TABLE "users" (
 "id_user" INTEGER ,
