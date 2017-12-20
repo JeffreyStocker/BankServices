@@ -2,7 +2,7 @@ if (!!process.env.PORT) {
   var dotenv= require('dotenv').config();
 }
 const express = require('express');
-var elastic = require ('./elasticsearch/elasticsearch.js');
+// var elastic = require ('./elasticsearch/elasticsearch.js');
 const queue = require ('./queues/queue.js');
 // const axios = require ('axios');
 
@@ -20,9 +20,12 @@ var app = express();
 //   userID = req.params.userID
 // })
 
+app.use(express.static('public'));
 
-
-
+app.post ('/get_access_token', (req, res) => {
+  // public_token: public_token,
+  console.log ((req.body))
+});
 var server = app.listen(8080, () =>  {
   // console.log("... port %d in %s mode", app.address().port, app.settings.env);
   console.log('App is listening on port: ', port)
