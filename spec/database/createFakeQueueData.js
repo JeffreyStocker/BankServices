@@ -22,18 +22,50 @@ module.exports.sendMessageToQueue = function (message, callback) {
 }
 
 
-for (var i = 0; i < 1; i ++) {
+
+
+var returnRandomInArray = function (array = ['']){
+  return array[Math.floor((Math.random()* array.length - 1) + 0)]
+}
+var returnRandomNumberUpToMax = function (max = 1) {
+  return Math.floor((Math.random()* max) + 1)
+}
+
+var createRandomNumberUpToIntiger = function () {
+  return Math.floor((Math.random()* 2147483646) + 1)
+}
+
+var createRandomString = function (length = 37, lowerCase = false) {
+  if (lowerCase) {
+    var possibilities = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  } else {
+    var possibilities = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  }
+  var possLength = possibilities.length;
+  var output = '';
+  for (var i = 0; i < length; i ++) {
+    output+= possibilities[Math.floor(Math.random() * possLength)];
+  }
+  return output;
+}
+
+
+
+
+for (var i = 0; i < 20; i ++) {
   var data = {
-    transactionID: Math.floor(Math.random()*200000),
-    route: !!Math.floor(Math.random*1) ? 'cashout' : 'withdraw',
-    userID: Math.floor(Math.random()*200000),
+    transactionID: Math.floor((Math.random()*2147483640) + 10000001),
+    route: Math.floor((Math.random()*2)+1) === 1 ? 'cashout' : 'withdraw',
+    userID: Math.floor((Math.random()*2147483640) + 10000001),
     amount: Math.floor(Math.random()*300000)/100
   }
-  module.exports.sendMessageToQueue(data, (err, data) => {
+
+  module.exports.sendMessageToQueue(data, (err, returnedData) => {
     if (err) {
       console.log('Send Messages to Queue Error', err);
     } else {
-      console.log(data);
+      console.log(data)
+      console.log(returnedData);
     }
   })
 }
