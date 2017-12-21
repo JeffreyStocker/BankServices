@@ -2,6 +2,7 @@ var Consumer = require('sqs-consumer'); //https://www.npmjs.com/package/sqs-cons
 var AWS = require('aws-sdk');
 if (!process.env.PORT) {
   var dotenv= require('dotenv').config();
+  var fake = process.env.USEFAKE
 }
 
 var { winston } = require ('../elasticsearch/winston');
@@ -12,16 +13,15 @@ var db = require('../database/databasePG.js')
 SQS_URL = process.env.SQS_URL
 SQS_TRANSACTION_URL = 'https://sqs.us-east-2.amazonaws.com/722156248668/outputToTransactions'
 SQS_CASHOUT_URL = 'https://sqs.us-east-2.amazonaws.com/722156248668/cashout'
-
+var sqsURL = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices'
+// SQS_URL = ''
 
 AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
 
-var sqsURL = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices'
 
 var sqs = new AWS.SQS({
   region: 'us-east-2',
 })
-
 
 
 var sendMessageToTransactionsQueue = function (transactionID, status) {
@@ -47,7 +47,7 @@ var sendMessageToTransactionsQueue = function (transactionID, status) {
 
 class Queue {
   constructor (url) {
-    this.url
+    this.url = url
   }
   send (message = {}) {
     return new Promise ((resolve, revoke) => {
@@ -169,9 +169,98 @@ var getDataFromQueue = function (callback) {
 }
 
 
+class Queue2 {
+  constructor (url, region = 'us-east-2') {
+    this.url = url;
+    this.batchsize = 1;
+    this.region = region;
+    this.running = false;
+
+    this.handleMessage = function (message, done) {
+      var msgBody = JSON.parse(message.Body);
+      winston.info({
+        transactionID: msgBody.transactionID,
+        stage: 'Received from Queue'
+      })
+      action(msgBody);
+      return done();
+    }
+
+    this.queue = Consumer.create({
+      queueUrl: this.url,
+      region: region,
+      batchSize: this.batchsize,
+      handleMessage:this.handleMessage
+    });
+
+    this.queue.on('error', err => {
+      console.log('Error Retrieving SQS Message', err);
+      winston.error('Error retrieving Info', err);
+    })
+    this.queue.on('empty', function () {
+      // console.log('queue is empty')
+      winston.info('queue is empty')
+    })
+  }
+  on () {
+    this.running = true;
+    this.queue.start();
+  }
+  off () {
+    this.false;
+    this.queue.off();
+  }
+
+  batchsize (size = 1) {
+    this.batchsize = size;
+    create ();
+  }
+  send (message = {}) {
+    return new Promise ((resolve, revoke) => {
+      var params = {
+        MessageBody: JSON.stringify(message),
+        QueueUrl: this.url
+      }
+      sqs.sendMessage(params, (err, response) => {
+        if (err) {
+          revoke (err);
+        } else {
+          resolve (response);
+        }
+      })
+    })
+  }
+
+  create () {
+    this.queue.stop();
+    this.running = false;
+
+    this.queue = Consumer.create({
+      queueUrl: this.url,
+      region: this.region,
+      batchSize: this.batchsize,
+      handleMessage: function (message, done) {
+        var msgBody = JSON.parse(message.Body);
+        winston.info({
+          transactionID: msgBody.transactionID,
+          stage: 'Received from Queue'
+        })
+        // console.log(msgBody);
+        action(msgBody);
+        return done();
+      }
+    });
+  }
+  handleMessage (func) {
+    this.handleMessage = func;
+  }
+}
+
+
 module.exports.sendMessageToCashoutQueue = sendMessageToCashoutQueue;
 module.exports.sendMessageToTransactionsQueue = sendMessageToTransactionsQueue;
 module.exports.getDataFromQueue = getDataFromQueue;
+
 
 ///////tests//////////
 getDataFromQueue()
