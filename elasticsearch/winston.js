@@ -24,3 +24,16 @@ winston.exitOnError = false;
 
 module.exports.winston = winston;
 
+
+///current thinking on formatting
+/*
+{
+  function: 'currentfunction',
+  transactionID: id of current transaction,
+  work: 'current work being done on the item'
+  stage: 'current stage of work'
+  error: 'basicly notes on the error
+}
+
+*/
+
