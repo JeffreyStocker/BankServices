@@ -1,10 +1,10 @@
 if (!!process.env.PORT) {
   var dotenv= require('dotenv').config();
 }
+var { winston } = require('./elasticsearch/winston');
 const express = require('express');
 // var elastic = require ('./elasticsearch/elasticsearch.js');
 const queue = require ('./queues/queue.js');
-// const axios = require ('axios');
 
 const port = process.env.port || 8080;
 
@@ -34,4 +34,8 @@ var server = app.listen(8080, () =>  {
 
 process.on('uncaughtException', (error) => {
   console.log ('UncaughtError!!', error)
+})
+
+winston.info({
+  system: "Server Start"
 })
