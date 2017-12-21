@@ -7,10 +7,10 @@ var axios = require('axios')
 var mockAuthResponse = require('../spec/example_data/plaidAuthorizationResponse.js')
 var useFake = process.env.USEFAKE || true;
 
-var PLAID_CLIENT_ID=process.env.PLAID_CLIENT_ID;
-var PLAID_SECRET_KEY=process.env.PLAID_SECRET_KEY;
-var PLAID_PUBLIC_KEY=process.env.PLAID_PUBLIC_KEY;
-var PLAID_ENV=process.env.PLAID_ENV;
+var PLAID_CLIENT_ID = process.env.PLAID_CLIENT_ID;
+var PLAID_SECRET_KEY = process.env.PLAID_SECRET_KEY;
+var PLAID_PUBLIC_KEY = process.env.PLAID_PUBLIC_KEY;
+var PLAID_ENV = process.env.PLAID_ENV;
 
 var access_token = 'access-sandbox-25194add-267c-4e10-95aa-05fab88dc69f';
 
