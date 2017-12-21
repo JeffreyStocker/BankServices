@@ -21,7 +21,7 @@ CREATE TABLE "accounts" (
 
 "plaid_access_token" VARCHAR(60) ,
 "plaid_account_id" VARCHAR(38) ,
-"plaid_item_id" VARCHAR(38) ,
+"plaid_item_id" integer ,
 -- "stripe_account_token" VARCHAR(20) ,
 -- "stripe_customer_id" VARCHAR(20) ,
 PRIMARY KEY ("id_account")
@@ -47,17 +47,18 @@ CREATE TABLE "transactions" (
 "user_id" INTEGER ,
 "status" VARCHAR(20) ,
 "amount" DECIMAL ,
-timestamp timestamp WITH TIME ZONE
+timestamp timestamp,
 PRIMARY KEY ("id_transaction")
 );
 
 CREATE TABLE "plaid_items" (
 "id_item"  SERIAL ,
-"item_id" VARCHAR(20) ,
+"item_id" VARCHAR(38) ,
 PRIMARY KEY ("id_item")
 );
 
 ALTER TABLE "accounts" ADD FOREIGN KEY ("bank_id") REFERENCES "banks" ("id_bank");
 ALTER TABLE "accounts" ADD FOREIGN KEY ("plaid_item_id") REFERENCES "plaid_Items" ("id_item");
 ALTER TABLE "users" ADD FOREIGN KEY ("account_id") REFERENCES "accounts" ("id_account");
-ALTER TABLE "transactions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id_user");
+-- ALTER TABLE "transactions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id_user");
+
