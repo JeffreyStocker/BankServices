@@ -4,7 +4,7 @@ if (!process.env.PORT) {
 var { winston } = require ('../elasticsearch/winston.js')
 var plaid = require('plaid');
 var axios = require('axios')
-
+var mockAuthResponse = require('../spec/example_data/plaidAuthorizationResponse.js')
 var useFake = process.env.USEFAKE || true;
 
 var PLAID_CLIENT_ID=process.env.PLAID_CLIENT_ID;
@@ -40,12 +40,14 @@ var exchangeTokenForDwollaProcessorToken = function (accessToken, accountID) {
     })
       throw "exchangeTokenForDwollaProcessorToken: Invalid access token or accountID"
   }
+
   winston.info({
     function: "exchangeTokenForDwollaProcessorToken",
     transactionID : transactionID || 'unknown',
     work: 'Dwolla Token Exchange',
     state: "Start"
   })
+
   return new Promise ((resolve, revoke) => {
     axios.post('https://sandbox.plaid.com/processor/dwolla/processor_token/create', {
       contentType: 'application/json',
@@ -74,57 +76,11 @@ var exchangeTokenForDwollaProcessorToken = function (accessToken, accountID) {
   })
 }
 
+
 if (useFake) {
   getAuth = function () {
     return new Promise ((resolve, revoke) => {
-      var data =
-      { accounts:
-        [ { account_id: 'JpGN5ELowxTd1LaxGx8JH4pLpjxbV6FpJb3Ve',
-            balances: { available: 100, current: 110, limit: null },
-            mask: '0000',
-            name: 'Plaid Checking',
-            official_name: 'Plaid Gold Standard 0% Interest Checking',
-            subtype: 'checking',
-            type: 'depository' },
-          { account_id: '5lwMgopqnbswXzjlqlJGskGQGdxlaMtzdxlq8',
-            balances: { available: 200, current: 210, limit: null },
-            mask: '1111',
-            name: 'Plaid Saving',
-            official_name: 'Plaid Silver Standard 0.1% Interest Saving',
-            subtype: 'savings',
-            type: 'depository' },
-          { account_id: 'lkXQKZE8mDc4R6ZmXmx1I3MmM5pKxDi17LQDg',
-            balances: { available: null, current: 1000, limit: null },
-            mask: '2222',
-            name: 'Plaid CD',
-            official_name: 'Plaid Bronze Standard 0.2% Interest CD',
-            subtype: 'cd',
-            type: 'depository' },
-          { account_id: 'kleQqyEgMDs9LBjAyAGas5EAEGxoJ1Hrpxny7',
-            balances: { available: null, current: 410, limit: 2000 },
-            mask: '3333',
-            name: 'Plaid Credit Card',
-            official_name: 'Plaid Diamond 12.5% APR Interest Credit Card',
-            subtype: 'credit card',
-            type: 'credit' } ],
-       item:
-        { available_products: [ 'balance' ],
-          billed_products: [ 'auth', 'transactions' ],
-          error: null,
-          institution_id: 'ins_1',
-          item_id: '7KJ5EpqrRbtlR31BrB5JUlBgxLKWrqsgzQXgj',
-          webhook: '' },
-       numbers:
-        [ { account: '1111222233330000',
-            account_id: 'JpGN5ELowxTd1LaxGx8JH4pLpjxbV6FpJb3Ve',
-            routing: '011401533',
-            wire_routing: '021000021' },
-          { account: '1111222233331111',
-            account_id: '5lwMgopqnbswXzjlqlJGskGQGdxlaMtzdxlq8',
-            routing: '011401533',
-            wire_routing: '021000021' } ],
-       request_id: 'Bw7Bw',
-       status_code: 200 }
+      var data = mockAuthResponse;
        resolve (data);
     })
   }
@@ -141,6 +97,7 @@ var createItem = function () {
   });
 }
 
+
 var checkIfUserHasAccountsWithEnoughBalance = function (infoFromPlaid, amount) {
   if (!infoFromPlaid) { throw 'checkIfUserHasAccountsWithEnoughBalance need info from plaid'}
   var validAccounts = [];
@@ -155,6 +112,7 @@ var checkIfUserHasAccountsWithEnoughBalance = function (infoFromPlaid, amount) {
     return validAccounts
   }
   return false;
+
 
   //example data from plaid
   //balances = { available: 100, current: 110, limit: null }
