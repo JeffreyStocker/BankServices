@@ -52,16 +52,16 @@ class Queue {
   send (message = {}) {
     return new Promise ((resolve, revoke) => {
       var params = {
-          MessageBody: JSON.stringify(message),
-          QueueUrl: this.url
+        MessageBody: JSON.stringify(message),
+        QueueUrl: this.url
+      }
+      sqs.sendMessage(params, (err, response) => {
+        if (err) {
+          revoke (err);
+        } else {
+          resolve (response);
         }
-        sqs.sendMessage(params, (err, response) => {
-          if (err) {
-            revoke (err);
-          } else {
-            resolve (response);
-          }
-        })
+      })
     })
   }
 }
