@@ -3,6 +3,7 @@ if (!process.env.PORT) {
 }
 var { winston } = require ('../elasticsearch/winston.js')
 var plaid = require('plaid');
+var axios = require('axios')
 
 var useFake = process.env.USEFAKE || true;
 
@@ -12,10 +13,8 @@ var PLAID_PUBLIC_KEY=process.env.PLAID_PUBLIC_KEY;
 var PLAID_ENV=process.env.PLAID_ENV;
 
 var access_token = 'access-sandbox-25194add-267c-4e10-95aa-05fab88dc69f';
-console.log(PLAID_CLIENT_ID)
+
 const plaidClient = new plaid.Client(PLAID_CLIENT_ID, PLAID_SECRET_KEY, PLAID_PUBLIC_KEY, plaid.environments[PLAID_ENV]);
-
-
 
 var getAuth = function (access_token) {
   return new Promise ((resolve, revoke) => {
@@ -29,6 +28,51 @@ var getAuth = function (access_token) {
   })
 }
 
+var exchangeTokenForDwollaProcessorToken = function (accessToken, accountID) {
+  if (!!useFake) {
+    accessToken = access_token;
+    accountID ="JpGN5ELowxTd1LaxGx8JH4pLpjxbV6FpJb3Ve";
+  } else if (!accessToken || !accountID) {
+    winston.warn({
+      function: "exchangeTokenForDwollaProcessorToken",
+      transactionID : transactionID,
+      error: "exchangeTokenForDwollaProcessorToken: Invalid access token or accountID"
+    })
+      throw "exchangeTokenForDwollaProcessorToken: Invalid access token or accountID"
+  }
+  winston.info({
+    function: "exchangeTokenForDwollaProcessorToken",
+    transactionID : transactionID || 'unknown',
+    work: 'Dwolla Token Exchange',
+    state: "Start"
+  })
+  return new Promise ((resolve, revoke) => {
+    axios.post('https://sandbox.plaid.com/processor/dwolla/processor_token/create', {
+      contentType: 'application/json',
+      data:
+      {
+        client_id: PLAID_CLIENT_ID,
+        secret: PLAID_SECRET_KEY,
+        access_token: accessToken,
+        account_id: accountID,
+      }
+    })
+    .then (response => {
+      resolve(response.data);
+    })
+    .catch(err => {
+      revoke (err)
+    })
+    .finally(() => {
+      winston.log ({
+        function: "exchangeTokenForDwollaProcessorToken",
+        transactionID : transactionID || 'unknown',
+        work: 'Dwolla Token Exchange',
+        state: "Done"
+      })
+    })
+  })
+}
 
 if (useFake) {
   getAuth = function () {
@@ -98,7 +142,7 @@ var createItem = function () {
 }
 
 var checkIfUserHasAccountsWithEnoughBalance = function (infoFromPlaid, amount) {
-  if (!infoFromPlaid) { return 'Error'}
+  if (!infoFromPlaid) { throw 'checkIfUserHasAccountsWithEnoughBalance need info from plaid'}
   var validAccounts = [];
   var account = infoFromPlaid.accounts;
   if (!infoFromPlaid || account.length === 0) {return false}
