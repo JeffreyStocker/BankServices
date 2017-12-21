@@ -45,6 +45,28 @@ var sendMessageToTransactionsQueue = function (transactionID, status) {
   })
 }
 
+class Queue {
+  constructor (url) {
+    this.url
+  }
+  send (message = {}) {
+    return new Promise ((resolve, revoke) => {
+      var params = {
+          MessageBody: JSON.stringify(message),
+          QueueUrl: this.url
+        }
+        sqs.sendMessage(params, (err, response) => {
+          if (err) {
+            revoke (err);
+          } else {
+            resolve (response);
+          }
+        })
+    })
+  }
+}
+
+
 var sendMessageToCashoutQueue = function (transactionID, callback = () => {}) {
   var msg = {
     transactionID: transactionID,
@@ -57,6 +79,7 @@ var sendMessageToCashoutQueue = function (transactionID, callback = () => {}) {
   sqs.sendMessage(params, callback)
 }
 
+
 var sendMessageToCashoutQueue = function (message, callback) {
   var msg = {payload: message};
   var params = {
@@ -67,11 +90,13 @@ var sendMessageToCashoutQueue = function (message, callback) {
   sqs.sendMessage(params, callback)
 }
 
+
 var action = function (actionData) {
   var status;
-
+  console.log('route', actionData.route)
   plaid.getAuth()
     .then (apiData =>{
+      // console.log('api data', apiData)
       var accounts = plaid.checkIfUserHasAccountsWithEnoughBalance(apiData, actionData.amount);
       if (!accounts) {
         status = 'declined';
@@ -90,18 +115,27 @@ var action = function (actionData) {
       console.log('success data', data)
     })
     .catch (err => {
-      console.log(err)
+      console.log(err);
+      try {
+        var id = transactionID;
+      } catch (err) {
+        var id = 'unknown'
+      }
       winston.warn({
-        transactionID: transactionID || 'unknown',
+        transactionID: id,
         error: err,
       })
     })
 
-  if (data.action === "cashout") {
+  if (actionData.route === "cashout") {
+
     sendMessageToCashoutQueue(data.transactionID)
-  } else if (data.action === 'payment') {
+  } else if (actionData.route === 'withdraw') {
+  } else {
+    console.log('no route found')
   }
 }
+
 
 var getDataFromQueue = function (callback) {
   var request = Consumer.create({
@@ -130,7 +164,7 @@ var getDataFromQueue = function (callback) {
 
   request.on('empty', function () {
     // console.log('queue is empty')
-    winston.log('error', 'queue is empty')
+    winston.info('queue is empty')
   })
 }
 
