@@ -18,7 +18,7 @@ pool.connect()
   console.log('DB Connected');
 
   // console.log(createTransaction(100000005, 1, 5432, 'test'))
-  console.log(findByTransactionID(100000002, (err, data) => console.log(err, data)))
+  // console.log(findByTransactionID(100000002, (err, data) => console.log(err, data)))
   // console.log(updateTransactionStatus(100000002, 'yep'))
 })
 .catch(err => {
@@ -28,13 +28,15 @@ pool.connect()
 
 //id_transaction, user_id, status, amount)
 var createTransaction = function (transactionID, userID, amount, status) {
-  pool.query(`insert into "transactions" VALUES (${transactionID}, ${userID}, '${status}', ${amount});`, (err, results) => {
-    console.log(err, results)
-    if (err) {
-      return err;
-    } else {
-      return results.rows;
-    }
+  return new Promise ((resolve, revoke) => {
+    pool.query(`insert into "transactions" VALUES (${transactionID}, '${userID}', '${status}', ${amount});`, (err, results) => {
+      // console.log(err, results)
+      if (err) {
+        revoke(err);
+      } else {
+        resolve(results);
+      }
+    })
   })
 }
 
@@ -44,8 +46,8 @@ var updateTransactionStatus = function (transactionID, status) {
     set status = '${status}'
     where transactions.id_transaction = ${transactionID};`,
    (err, results) => {
-    console.log(err, results)
-    if (err) {
+     if (err) {
+      console.log(err)
       return err;
     } else {
       return results;
@@ -65,7 +67,7 @@ var findByUserID = function (userID, callback) {
     } else {
       callback (null, res.rows)
     }
-    pool.end()
+    // pool.end()
   })
 }
 
@@ -81,7 +83,7 @@ var findByTransactionID = function (transactionID, callback) {
     } else {
       callback (null, res.rows)
     }
-    pool.end()
+    // pool.end()
   })
 }
 
