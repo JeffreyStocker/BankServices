@@ -1,3 +1,5 @@
+var { winston } = require('../elasticsearch/winston');
+
 const { Client, Pool } = require('pg');
 if (!process.env.PORT) {
   var dotenv= require('dotenv').config();
@@ -28,9 +30,19 @@ pool.connect()
 
 //id_transaction, user_id, status, amount)
 var createTransaction = function (transactionID, userID, amount, status) {
+  winston.log({
+    transactionID: transactionID || 'unknown',
+    location: 'database',
+    stage: 'start'
+  })
   return new Promise ((resolve, revoke) => {
     pool.query(`insert into "transactions" VALUES (${transactionID}, '${userID}', '${status}', ${amount});`, (err, results) => {
       // console.log(err, results)
+      winston.log({
+        transactionID: transactionID || 'unknown',
+        location: 'database',
+        stage: 'end'
+      })
       if (err) {
         revoke(err);
       } else {
