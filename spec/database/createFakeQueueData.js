@@ -1,6 +1,6 @@
 var AWS = require('aws-sdk');
 const env = require('dotenv').config();
-var fake = false;
+var fake = true;
 // AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
 
 if (fake === true) {
@@ -14,7 +14,7 @@ if (fake === true) {
     sns_endpoint: "0.0.0.0",
     sns_port: 9292,});
 
-    var sqsURL = 'localhost:9292'
+    var sqsURL = 'localhost:4568'
 } else {
   AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
   var sqsURL = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices'
