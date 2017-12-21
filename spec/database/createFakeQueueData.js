@@ -1,10 +1,26 @@
 var AWS = require('aws-sdk');
 const env = require('dotenv').config();
+var fake = false;
 // AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
-AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
 
-var sqsURL = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices'
-// var sqsURL = 'http://localhost:1000/722156248668/inputToBankServices'
+if (fake === true) {
+
+  AWS.config.update({
+    sqs_endpoint: "localhost",
+    sqs_port: 4789,
+    use_ssl: false,
+    accessKeyId: 'xxx',
+    secretAccessKey:'yyy',
+    sns_endpoint: "0.0.0.0",
+    sns_port: 9292,});
+
+    var sqsURL = 'localhost:9292'
+} else {
+  AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
+  var sqsURL = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices'
+}
+
+// // var sqsURL = 'http://localhost:1000/722156248668/inputToBankServices'
 
 var sqs = new AWS.SQS({
   region: 'us-east-2',
@@ -14,6 +30,7 @@ module.exports.sendMessageToQueue = function (message, callback) {
   // var msg = {payload: message};
   var msg = message;
   var params = {
+    // use_ssl: false,
     MessageBody: JSON.stringify(msg),
     // QueueUrl: process.env.SQS_URL
     QueueUrl: sqsURL
@@ -47,18 +64,23 @@ var createRandomString = function (length = 37, lowerCase = false) {
 }
 
 for (var i = 0; i < 20; i ++) {
-  var data = {
+  // var data = {
+  //   transactionID: Math.floor((Math.random()*2147483640) + 10000001),
+  //   route: Math.floor((Math.random()*2)+1) === 1 ? 'cashout' : 'withdraw',
+  //   userID: Math.floor((Math.random()*2147483640) + 10000001),
+  //   amount: Math.floor(Math.random()*300000)/100
+  // }
+
+  module.exports.sendMessageToQueue({
     transactionID: Math.floor((Math.random()*2147483640) + 10000001),
     route: Math.floor((Math.random()*2)+1) === 1 ? 'cashout' : 'withdraw',
     userID: Math.floor((Math.random()*2147483640) + 10000001),
     amount: Math.floor(Math.random()*300000)/100
-  }
-
-  module.exports.sendMessageToQueue(data, (err, returnedData) => {
+  }, (err, returnedData) => {
     if (err) {
       console.log('Send Messages to Queue Error', err);
     } else {
-      console.log(data)
+      // console.log(data)
       console.log(returnedData);
     }
   })
