@@ -21,9 +21,6 @@ module.exports.sendMessageToQueue = function (message, callback) {
   sqs.sendMessage(params, callback)
 }
 
-
-
-
 var returnRandomInArray = function (array = ['']){
   return array[Math.floor((Math.random()* array.length - 1) + 0)]
 }
@@ -48,9 +45,6 @@ var createRandomString = function (length = 37, lowerCase = false) {
   }
   return output;
 }
-
-
-
 
 for (var i = 0; i < 20; i ++) {
   var data = {
