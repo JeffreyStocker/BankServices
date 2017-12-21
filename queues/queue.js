@@ -6,7 +6,7 @@ if (!process.env.PORT) {
 
 var { winston } = require ('../elasticsearch/winston');
 var plaid = require ('../middleware/plaid.js');
-var db = require('../database/databasePG')
+var db = require('../database/databasePG.js')
 
 // SQS_URL = process.env.NODE_ENV === 'production' ? process.env.SQS_URL : process.env.SQS_MOCK_URL
 SQS_URL = process.env.SQS_URL
@@ -42,7 +42,6 @@ var sendMessageToTransactionsQueue = function (transactionID, status) {
           resolve (response);
         }
       })
-
   })
 }
 
@@ -72,27 +71,31 @@ var action = function (actionData) {
   var status;
 
   plaid.getAuth()
-  .then (apiData =>{
-    var accounts = plaid.checkIfUserHasAccountsWithEnoughBalance(apiData, actionData.amount);
-    if (!accounts) {
-      status = 'declined';
-    } else {
-      status = 'approved';
-    }
-  })
-  .then((data) => {
-    return db.createTransaction(actionData.transactionID, actionData.userID, actionData.amount, status);
-  })
-  .then ((data) => {
-    console.log(data)
-    return sendMessageToTransactionsQueue (actionData.transactionID, status);
-  })
-  .then ((data)=> {
-    console.log('success data', data)
-  })
-  .catch (err => {
-    console.log(err)
-  })
+    .then (apiData =>{
+      var accounts = plaid.checkIfUserHasAccountsWithEnoughBalance(apiData, actionData.amount);
+      if (!accounts) {
+        status = 'declined';
+      } else {
+        status = 'approved';
+      }
+    })
+    .then((data) => {
+      return db.createTransaction(actionData.transactionID, actionData.userID, actionData.amount, status);
+    })
+    .then ((data) => {
+      console.log(data)
+      return sendMessageToTransactionsQueue (actionData.transactionID, status);
+    })
+    .then ((data)=> {
+      console.log('success data', data)
+    })
+    .catch (err => {
+      console.log(err)
+      winston.warn({
+        transactionID: transactionID || 'unknown',
+        error: err,
+      })
+    })
 
   if (data.action === "cashout") {
     sendMessageToCashoutQueue(data.transactionID)
@@ -107,7 +110,10 @@ var getDataFromQueue = function (callback) {
     batchSize: 1,
     handleMessage: function (message, done) {
       var msgBody = JSON.parse(message.Body);
-      winston.info({transactionID: msgBody.transactionID, stage: 'Received from Queue'})
+      winston.info({
+        transactionID: msgBody.transactionID,
+        stage: 'Received from Queue'
+      })
       // console.log(msgBody);
       action(msgBody);
       return done();
