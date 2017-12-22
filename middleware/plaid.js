@@ -5,7 +5,11 @@ var { winston } = require ('../elasticsearch/winston.js')
 var plaid = require('plaid');
 var axios = require('axios')
 var mockAuthResponse = require('../spec/example_data/plaidAuthorizationResponse.js')
-var useFake = process.env.USEFAKE || true;
+if (!process.env.useFake || process.env.useFake === 'true') {
+  var useFake = true;
+} else {
+  var useFake = 'false';
+}
 
 var PLAID_CLIENT_ID = process.env.PLAID_CLIENT_ID;
 var PLAID_SECRET_KEY = process.env.PLAID_SECRET_KEY;
