@@ -10,15 +10,25 @@ var plaid = require ('../middleware/plaid.js');
 var db = require('../database/databasePG.js')
 
 // SQS_URL = process.env.NODE_ENV === 'production' ? process.env.SQS_URL : process.env.SQS_MOCK_URL
-SQS_URL = process.env.SQS_URL
-SQS_TRANSACTION_URL = 'https://sqs.us-east-2.amazonaws.com/722156248668/outputToTransactions'
-SQS_CASHOUT_URL = 'https://sqs.us-east-2.amazonaws.com/722156248668/cashout'
-var sqsURL = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices'
-// SQS_URL = ''
+
+console.log('fake', fake)
+if (fake === 'true') {
+  console.log('Using Mock SQS Queues')
+  var SQS_URL = 'http://localhost:8000/test'
+  var SQS_TRANSACTION_URL = 'http://localhost:8000/outputToTransactions'
+  var SQS_CASHOUT_URL = 'http://localhost:8000/cashout'
+  var SQS_BankServices = 'http://localhost:8000/inputToBankServices'
+} else {
+  console.log('Using Real SQS Queues')
+  var SQS_URL = process.env.SQS_URL
+  var SQS_TRANSACTION_URL = 'https://sqs.us-east-2.amazonaws.com/722156248668/outputToTransactions'
+  var SQS_CASHOUT_URL = 'https://sqs.us-east-2.amazonaws.com/722156248668/cashout'
+  var SQS_BankServices = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices'
+}
+
+
 
 AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
-
-
 var sqs = new AWS.SQS({
   region: 'us-east-2',
 })
@@ -139,17 +149,23 @@ var action = function (actionData) {
 
 var getDataFromQueue = function (callback) {
   var request = Consumer.create({
-    queueUrl: process.env.SQS_URL,
+    queueUrl: SQS_BankServices,
     region: 'us-east-2',
     batchSize: 1,
     handleMessage: function (message, done) {
-      var msgBody = JSON.parse(message.Body);
+      console.log('poll queue')
+      try {
+        message = JSON.parse(message.Body);
+      } catch (err) {
+        message = (message);
+      }
+      console.log('message', message)
       winston.info({
-        transactionID: msgBody.transactionID,
+        transactionID: message.transactionID,
         stage: 'Received from Queue'
       })
       // console.log(msgBody);
-      action(msgBody);
+      action(message);
       return done();
     }
   });
@@ -170,51 +186,66 @@ var getDataFromQueue = function (callback) {
 
 
 class Queue2 {
-  constructor (url, region = 'us-east-2') {
+  constructor (
+    url,
+    options = {},
+    count = 1,
+  ) {
+
+    this.queues = [];
     this.url = url;
-    this.batchsize = 1;
-    this.region = region;
+    this.batchSize = 1;
     this.running = false;
 
-    this.handleMessage = function (message, done) {
-      var msgBody = JSON.parse(message.Body);
-      winston.info({
-        transactionID: msgBody.transactionID,
-        stage: 'Received from Queue'
-      })
-      action(msgBody);
-      return done();
+    this.options = {
+      count: options.count || 1,
+      batchSize: options.batchSize || 1,
+      region: options.region || 'us-east-2',
+      start: options.start || false,
+      handleMessages: options.handleMessages || function (message, done) {
+        var msgBody = JSON.parse(message.Body);
+        winston.info({
+          transactionID: msgBody.transactionID,
+          stage: 'Received from Queue'
+        })
+        action(msgBody);
+        return done();
+      },
     }
 
-    this.queue = Consumer.create({
-      queueUrl: this.url,
-      region: region,
-      batchSize: this.batchsize,
-      handleMessage:this.handleMessage
-    });
+    // if (func !== undefined ) {
+    //   this.handleMessage = function (message, done) {
+    //     var msgBody = JSON.parse(message.Body);
+    //     winston.info({
+    //       transactionID: msgBody.transactionID,
+    //       stage: 'Received from Queue'
+    //     })
+    //     action(msgBody);
+    //     return done();
+    //   }
+    // } else {
+    //   this.handleMessage = func;
+    // }
 
-    this.queue.on('error', err => {
-      console.log('Error Retrieving SQS Message', err);
-      winston.error('Error retrieving Info', err);
-    })
-    this.queue.on('empty', function () {
-      // console.log('queue is empty')
-      winston.info('queue is empty')
-    })
+    // if (options.start === true ) {
+    //   the.queue.start();
+    // }
   }
-  on () {
+
+  start () {
+    console.log('here')
     this.running = true;
-    this.queue.start();
+    this.queues.forEach(queue => {
+      queue.start();
+    })
   }
-  off () {
+  stop () {
     this.false;
-    this.queue.off();
+    this.queues.forEach(queue => {
+      queue.stop();
+    })
   }
 
-  batchsize (size = 1) {
-    this.batchsize = size;
-    create ();
-  }
   send (message = {}) {
     return new Promise ((resolve, revoke) => {
       var params = {
@@ -231,13 +262,13 @@ class Queue2 {
     })
   }
 
-  create () {
+  createQueue () {
     this.queue.stop();
     this.running = false;
 
-    this.queue = Consumer.create({
+    var queue = Consumer.create({
       queueUrl: this.url,
-      region: this.region,
+      region: this.options.region,
       batchSize: this.batchsize,
       handleMessage: function (message, done) {
         var msgBody = JSON.parse(message.Body);
@@ -250,10 +281,36 @@ class Queue2 {
         return done();
       }
     });
+
+    queue.on('error', err => {
+      // console.log('Error Retrieving SQS Message', err);
+      winston.error('Error retrieving Info', err);
+    })
+    queue.on('empty', function () {
+      // console.log('queue is empty');
+      winston.info('queue is empty');
+    })
+    return queue;
   }
-  handleMessage (func) {
+
+  pushQueue() {
+    this.queues.push(this.createQueue())
+  }
+
+  popQueue () {
+    this.queues[queues.length - 1].stop();
+    this.queues.pop();
+  }
+
+  changeHandleMessage (func) {
     this.handleMessage = func;
   }
+
+    // batchsize (size = 1) {
+  //   this.batchsize = size;
+  //   create ();
+  // }
+
 }
 
 
@@ -264,7 +321,11 @@ module.exports.getDataFromQueue = getDataFromQueue;
 
 ///////tests//////////
 getDataFromQueue()
-winston.log('info', 'testings')
+// winston.log('info', 'testings')
+
+// var testqueue = new Queue2('localhost:8000/test')
+// testqueue.start();
+
 
 //sendMessageToQueue('test', (err, data) => {
 //   if (err) {
