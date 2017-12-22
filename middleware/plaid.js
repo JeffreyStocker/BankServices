@@ -1,10 +1,10 @@
 if (!process.env.PORT) {
-  var dotenv= require('dotenv').config();
+  var dotenv = require('dotenv').config();
 }
-var { winston } = require ('../elasticsearch/winston.js')
+var { winston } = require ('../elasticsearch/winston.js');
 var plaid = require('plaid');
-var axios = require('axios')
-var mockAuthResponse = require('../spec/example_data/plaidAuthorizationResponse.js')
+var axios = require('axios');
+var mockAuthResponse = require('../spec/example_data/plaidAuthorizationResponse.js');
 if (!process.env.useFake || process.env.useFake === 'true') {
   var useFake = true;
 } else {
@@ -22,35 +22,35 @@ const plaidClient = new plaid.Client(PLAID_CLIENT_ID, PLAID_SECRET_KEY, PLAID_PU
 
 var getAuth = function (access_token) {
   return new Promise ((resolve, revoke) => {
-    plaidClient.getAuth(access_token,{},(err, data) => {
+    plaidClient.getAuth(access_token, {}, (err, data) => {
       if (err) {
         revoke (err);
       } else {
         resolve (data);
       }
-    })
-  })
-}
+    });
+  });
+};
 
 var exchangeTokenForDwollaProcessorToken = function (accessToken, accountID) {
   if (!!useFake) {
     accessToken = access_token;
-    accountID ="JpGN5ELowxTd1LaxGx8JH4pLpjxbV6FpJb3Ve";
+    accountID = 'JpGN5ELowxTd1LaxGx8JH4pLpjxbV6FpJb3Ve';
   } else if (!accessToken || !accountID) {
     winston.warn({
-      function: "exchangeTokenForDwollaProcessorToken",
-      transactionID : transactionID,
-      error: "exchangeTokenForDwollaProcessorToken: Invalid access token or accountID"
-    })
-      throw "exchangeTokenForDwollaProcessorToken: Invalid access token or accountID"
+      function: 'exchangeTokenForDwollaProcessorToken',
+      transactionID: transactionID,
+      error: 'exchangeTokenForDwollaProcessorToken: Invalid access token or accountID'
+    });
+    throw 'exchangeTokenForDwollaProcessorToken: Invalid access token or accountID';
   }
 
   winston.info({
-    function: "exchangeTokenForDwollaProcessorToken",
-    transactionID : transactionID || 'unknown',
+    function: 'exchangeTokenForDwollaProcessorToken',
+    transactionID: transactionID || 'unknown',
     work: 'Dwolla Token Exchange',
-    state: "Start"
-  })
+    state: 'Start'
+  });
 
   return new Promise ((resolve, revoke) => {
     axios.post('https://sandbox.plaid.com/processor/dwolla/processor_token/create', {
@@ -63,57 +63,57 @@ var exchangeTokenForDwollaProcessorToken = function (accessToken, accountID) {
         account_id: accountID,
       }
     })
-    .then (response => {
-      resolve(response.data);
-    })
-    .catch(err => {
-      revoke (err)
-    })
-    .finally(() => {
-      winston.log ({
-        function: "exchangeTokenForDwollaProcessorToken",
-        transactionID : transactionID || 'unknown',
-        work: 'Dwolla Token Exchange',
-        state: "Done"
+      .then (response => {
+        resolve(response.data);
       })
-    })
-  })
-}
+      .catch(err => {
+        revoke (err);
+      })
+      .finally(() => {
+        winston.log ({
+          function: 'exchangeTokenForDwollaProcessorToken',
+          transactionID: transactionID || 'unknown',
+          work: 'Dwolla Token Exchange',
+          state: 'Done'
+        });
+      });
+  });
+};
 
 
 if (useFake) {
   getAuth = function () {
     return new Promise ((resolve, revoke) => {
       var data = mockAuthResponse;
-       resolve (data);
-    })
-  }
+      resolve (data);
+    });
+  };
 }
 
 
 var createItem = function () {
   plaidClient.exchangePublicToken('public-sandbox-e3c11412-9417-4ffc-b2c4-e7e67cc9a41a', (err, data) => {
-    if (err){
-      console.log('err', err)
+    if (err) {
+      console.log('err', err);
     } else {
-      console.log('data', data)
+      console.log('data', data);
     }
   });
-}
+};
 
 
 var checkIfUserHasAccountsWithEnoughBalance = function (infoFromPlaid, amount) {
-  if (!infoFromPlaid) { throw 'checkIfUserHasAccountsWithEnoughBalance need info from plaid'}
+  if (!infoFromPlaid) { throw 'checkIfUserHasAccountsWithEnoughBalance need info from plaid'; }
   var validAccounts = [];
   var account = infoFromPlaid.accounts;
-  if (!infoFromPlaid || account.length === 0) {return false}
+  if (!infoFromPlaid || account.length === 0) { return false; }
   for (var i = 0; i < account.length; i++ ) {
     if (account[i].balances.available >= amount) {
       validAccounts.push(account[i].account_id);
     }
   }
   if (validAccounts.length > 0) {
-    return validAccounts
+    return validAccounts;
   }
   return false;
 
@@ -167,14 +167,14 @@ var checkIfUserHasAccountsWithEnoughBalance = function (infoFromPlaid, amount) {
 //        wire_routing: '021000021' } ],
 //   request_id: 'lGX6W',
 //   status_code: 200 }
-}
+};
 
 
 
 //https://plaid.com/docs/api/#auth
 //“access_token”: “access-sandbox-5cd6e1b1-1b5b-459d-9284-366e2da89755”
-//"item_id": "Jv785paMV8hRGWNBRjbjUybw8N9B3yTBDdkwV"
-//"request_id": "h5Ci1"///// make sure to log this
+//'item_id': 'Jv785paMV8hRGWNBRjbjUybw8N9B3yTBDdkwV'
+//'request_id': 'h5Ci1'///// make sure to log this
 
 ///token public-sandbox-e3c11412-9417-4ffc-b2c4-e7e67cc9a41a
 //item ID = 7KJ5EpqrRbtlR31BrB5JUlBgxLKWrqsgzQXgj
