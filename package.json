@@ -16,11 +16,13 @@
     "chance.js": "0.0.1",
     "faker": "^4.1.0",
     "mocha": "^4.0.1",
-    "supertest": "^3.0.0"
+    "supertest": "^3.0.0",
+    "windows-cpu": "^0.1.4"
   },
   "dependencies": {
     "axios": "^0.17.1",
     "dotenv": "^4.0.0",
+    "dwolla": "^0.1.5",
     "elasticsearch": "^14.0.0",
     "express": "^4.16.2",
     "memcached": "^2.2.2",
