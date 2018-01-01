@@ -121,10 +121,10 @@ var createRandomString = function (length = 37, lowerCase = false) {
 //   console.log(err.response.status, err.response.statusText);
 // })
 
-for (var i = 0; i < 200; i ++) {
+for (var i = 0; i < 100; i ++) {
   //"Action=SendMessage&QueueUrl=http%3A%2F%2Fsqs.docker%3A9494%2Ftest-queue&MessageBody=testing123&
   axios.post('http://localhost:8000/inputToBankServices',
-    `Action=SendMessage&QueueUrl=localHost/test&MessageBody=` + JSON.stringify(
+    'Action=SendMessage&QueueUrl=localHost/test&MessageBody=' + JSON.stringify(
       {
         transactionID: Math.floor((Math.random() * 2147483640) + 10000001),
         route: Math.floor((Math.random() * 2) + 1) === 1 ? 'cashout' : 'withdraw',

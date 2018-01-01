@@ -6,15 +6,15 @@ var fake = true;
 if (fake === true) {
 
   AWS.config.update({
-    sqs_endpoint: "localhost",
+    sqs_endpoint: 'localhost',
     sqs_port: 4789,
     use_ssl: false,
     accessKeyId: 'xxx',
-    secretAccessKey:'yyy',
-    sns_endpoint: "0.0.0.0",
-    sns_port: 9292,});
+    secretAccessKey: 'yyy',
+    sns_endpoint: '0.0.0.0',
+    sns_port: 9292, });
 
-    var sqsURL = 'localhost:4568'
+  var sqsURL = 'localhost:4568';
 } else {
   AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
   var sqsURL = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices'
@@ -24,7 +24,7 @@ if (fake === true) {
 
 var sqs = new AWS.SQS({
   region: 'us-east-2',
-})
+});
 
 module.exports.sendMessageToQueue = function (message, callback) {
   // var msg = {payload: message};
@@ -34,34 +34,34 @@ module.exports.sendMessageToQueue = function (message, callback) {
     MessageBody: JSON.stringify(msg),
     // QueueUrl: process.env.SQS_URL
     QueueUrl: sqsURL
-  }
-  sqs.sendMessage(params, callback)
-}
+  };
+  sqs.sendMessage(params, callback);
+};
 
-var returnRandomInArray = function (array = ['']){
-  return array[Math.floor((Math.random()* array.length - 1) + 0)]
-}
+var returnRandomInArray = function (array = ['']) {
+  return array[Math.floor(( Math.random() * array.length - 1) + 0) ];
+};
 var returnRandomNumberUpToMax = function (max = 1) {
-  return Math.floor((Math.random()* max) + 1)
-}
+  return Math.floor((Math.random()* max) + 1);
+};
 
 var createRandomNumberUpToIntiger = function () {
-  return Math.floor((Math.random()* 2147483646) + 1)
-}
+  return Math.floor((Math.random()* 2147483646) + 1);
+};
 
 var createRandomString = function (length = 37, lowerCase = false) {
   if (lowerCase) {
-    var possibilities = 'abcdefghijklmnopqrstuvwxyz0123456789'
+    var possibilities = 'abcdefghijklmnopqrstuvwxyz0123456789';
   } else {
     var possibilities = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   }
   var possLength = possibilities.length;
   var output = '';
   for (var i = 0; i < length; i ++) {
-    output+= possibilities[Math.floor(Math.random() * possLength)];
+    output += possibilities[Math.floor(Math.random() * possLength)];
   }
   return output;
-}
+};
 
 for (var i = 0; i < 20; i ++) {
   // var data = {
@@ -83,5 +83,5 @@ for (var i = 0; i < 20; i ++) {
       // console.log(data)
       console.log(returnedData);
     }
-  })
+  });
 }

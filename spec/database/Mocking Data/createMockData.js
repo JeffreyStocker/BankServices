@@ -2,59 +2,32 @@ var sequelize = require ('sequelize');
 var fs = require('fs');
 var faker = require('faker');
 var chance = require('chance.js');
-var nationalBanks = require('../spec/example_data/nationalBanks.js');
-var regionalBanks = require('../spec/example_data/regionalBanks.js');
+var nationalBanks = require('../../example_data/nationalBanks.js');
+var regionalBanks = require('../../example_data/regionalBanks.js');
 
 var allBanksLength = regionalBanks.length + nationalBanks.length;
 
 //will need to run twice to get all 10 million records
 //adjust start to 5000001 and keep amount to add at 5000000
-var start = 1;
-var amountToAdd = 5000000;
+var integer = 11; 
+// var stop = 1000000;
+console.log('integer:', integer);
+var amountToAdd = 1000000;
+var start = ((integer - 1) * amountToAdd) + 1;
+// var start = 1;
+// var amountToAdd = 5000000;
 
-var transactionsLocation = './transactions';
-var transactions = fs.createWriteStream(transactionsLocation, { flags: 'a'});
-var usersLocation = './users';
-var users = fs.createWriteStream(usersLocation, { flags: 'a'});
-var accountsLocation = './accounts';
-var accounts = fs.createWriteStream(accountsLocation, { flags: 'a'});
-var plaidItemsLocation = './plaidItems';
-var plaidItems = fs.createWriteStream(plaidItemsLocation, { flags: 'a'});
+var baseFolder = './database/mockData'
 
-for (var i = 0; i < amountToAdd; i ++) {
-  if ( i % 1000000 === 0 ) {
-    console.log(i / 1000000);
-  }
-  let currentCount = i + start;
+var transactionsLocation = '/transactions';
+var transactions = fs.createWriteStream(baseFolder + transactionsLocation, { flags: 'a'});
+var usersLocation = '/users';
+var users = fs.createWriteStream(baseFolder + usersLocation, { flags: 'a'});
+var accountsLocation = '/accounts';
+var accounts = fs.createWriteStream(baseFolder + accountsLocation, { flags: 'a'});
+var plaidItemsLocation = '/plaidItems';
+var plaidItems = fs.createWriteStream(baseFolder + plaidItemsLocation, { flags: 'a'});
 
-  let userID = currentCount;
-  let transactionID = currentCount;
-  let status = 'good';
-  let amount = Math.floor(Math.random() * 300000) / 100;
-  let account = createRandomNumberUpToIntiger();
-
-  let id_accounts = currentCount; //length 37
-  let bankID = returnRandomNumberUpToMax(allBanksLength);
-  let plaid_access_token = createPlaidRandomFakeToken(); // length  56
-  let plaid_account_ID = createRandomString(); //length 37
-
-  let plaidID = currentCount;
-  let plaid_itemID = createRandomString();
-
-  transactions.write (transactionID + '|' + userID + '|' + status + '|' + amount + '\n');
-  plaidItems.write (plaidID + '|' + plaid_itemID + '\n');
-  users.write (currentCount + '|' + id_accounts + '\n');
-  accounts.write (id_accounts + '|' + bankID + '|' + plaid_access_token + '|' + plaid_account_ID + '|' + plaidID + '\n');
-
-}
-
-transactions.end();
-users.end();
-accounts.end();
-plaidItems.end();
-
-
-console.log('complete');
 
 
 var returnRandomInArray = function (array = ['']) {
@@ -118,3 +91,41 @@ var createPlaidRandomFakeToken = function (accessRandom = false) {
   var token = `${env}-${access}-${char8}-${char4a}-${char4b}-${char4c}-${char12}`;
   return token;
 };
+
+
+/// main program
+
+for (var i = 0; i < amountToAdd; i ++) {
+  if ( i % 1000000 === 0 ) {
+    console.log(i / 1000000);
+  }
+  let currentCount = i + start;
+
+  let userID = currentCount;
+  let transactionID = currentCount;
+  let status = 'good';
+  let amount = Math.floor(Math.random() * 300000) / 100;
+  let account = createRandomNumberUpToIntiger();
+
+  let id_accounts = currentCount; //length 37
+  let bankID = returnRandomNumberUpToMax(allBanksLength);
+  let plaid_access_token = createPlaidRandomFakeToken(); // length  56
+  let plaid_account_ID = createRandomString(); //length 37
+
+  let plaidID = currentCount;
+  let plaid_itemID = createRandomString();
+
+  transactions.write (transactionID + '|' + userID + '|' + status + '|' + amount + '\n');
+  plaidItems.write (plaidID + '|' + plaid_itemID + '\n');
+  users.write (currentCount + '|' + id_accounts + '\n');
+  accounts.write (id_accounts + '|' + bankID + '|' + plaid_access_token + '|' + plaid_account_ID + '|' + plaidID + '\n');
+
+}
+
+transactions.end();
+users.end();
+accounts.end();
+plaidItems.end();
+
+
+console.log('complete');
