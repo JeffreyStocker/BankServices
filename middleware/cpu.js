@@ -1,4 +1,5 @@
 var cpu = require('windows-cpu');
+
 //https://www.npmjs.com/package/windows-cpu
 // Get total load on server for each CPU
 
@@ -57,4 +58,13 @@ module.exports.cpuInfo = function () {
 
     // console.log('Installed Processors: ', results);
   });
+};
+
+var averageCPULoadPercent = function () {
+  var load = process.cpuUsage();
+  return Math.floor((load.user / load.system ) * 100);
+};
+
+var returnPID = function () {
+  return process.pid;
 };
