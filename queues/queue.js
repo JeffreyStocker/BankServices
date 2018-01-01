@@ -1,14 +1,14 @@
-var Consumer = require('sqs-consumer'); //https://www.npmjs.com/package/sqs-consumer
-var AWS = require('aws-sdk');
 if (!process.env.PORT) {
   var dotenv = require('dotenv').config();
   var fake = process.env.USEFAKE;
 }
+var AWS = require('aws-sdk');
 
+// var Consumer = require('sqs-consumer'); //https://www.npmjs.com/package/sqs-consumer
+// var plaid = require ('../middleware/plaid.js');
 var { winston } = require ('../elasticsearch/winston');
-var plaid = require ('../middleware/plaid.js');
 
-var db = require('../database/databasePG.js');
+// var db = require('../database/databasePG.js');
 var Queue = require ('./ClassQueue.js');
 var { action, actionsForBankDeposits } = require('./actions.js');
 // SQS_URL = process.env.NODE_ENV === 'production' ? process.env.SQS_URL : process.env.SQS_MOCK_URL
@@ -54,6 +54,7 @@ var sendMessageToTransactionsQueue = function (transactionID, status) {
   });
 };
 
+
 var sendMessageToCashoutQueue = function (transactionID, callback = () => {}) {
   var msg = {
     transactionID: transactionID,
@@ -66,58 +67,43 @@ var sendMessageToCashoutQueue = function (transactionID, callback = () => {}) {
   sqs.sendMessage(params, callback);
 };
 
+// var getDataFromQueue = function (callback) {
+//   var request = Consumer.create({
+//     queueUrl: SQS_BankServices,
+//     region: 'us-east-2',
+//     batchSize: 1,
+//     handleMessage: function (message, done) {
+//       console.log('poll queue');
+//       try {
+//         message = JSON.parse(message.Body);
+//       } catch (err) {
+//         message = (message);
+//       }
+//       console.log('message', message);
+//       winston.info({
+//         transactionID: message.transactionID,
+//         stage: 'Received from Queue'
+//       });
+//       // console.log(msgBody);
+//       action(message);
+//       return done();
+//     }
+//   });
 
-var sendMessageToCashoutQueue = function (message, callback) {
-  var msg = {payload: message};
-  var params = {
-    // MessageBody: JSON.stringify(msg),
-    MessageBody: JSON.stringify(message),
-    QueueUrl: SQS_CASHOUT_URL
-  };
-  sqs.sendMessage(params, callback);
-};
+//   request.on('error', err => {
+//     console.log('Error Retrieving SQS Message', err);
+//     winston.error('Error retrieving Info', err);
+//   });
+//   request.start();
+//   request.stop();
+//   console.log('polling queue');
 
-
-
-
-var getDataFromQueue = function (callback) {
-  var request = Consumer.create({
-    queueUrl: SQS_BankServices,
-    region: 'us-east-2',
-    batchSize: 1,
-    handleMessage: function (message, done) {
-      console.log('poll queue');
-      try {
-        message = JSON.parse(message.Body);
-      } catch (err) {
-        message = (message);
-      }
-      console.log('message', message);
-      winston.info({
-        transactionID: message.transactionID,
-        stage: 'Received from Queue'
-      });
-      // console.log(msgBody);
-      action(message);
-      return done();
-    }
-  });
-
-  request.on('error', err => {
-    console.log('Error Retrieving SQS Message', err);
-    winston.error('Error retrieving Info', err);
-  });
-  request.start();
-  request.stop();
-  console.log('polling queue');
-
-  request.on('empty', function () {
-    // console.log('queue is empty')
-    winston.info('queue is empty');
-  });
-};
-
-
+//   request.on('empty', function () {
+//     // console.log('queue is empty')
+//     winston.info('queue is empty');
+//   });
+// };
+// module.exports.getDataFromQueue = getDataFromQueue;
 
 
 var handleBankQueuesMessages = function () {
@@ -139,7 +125,6 @@ var handleBankQueuesMessages = function () {
 
 module.exports.sendMessageToCashoutQueue = sendMessageToCashoutQueue;
 module.exports.sendMessageToTransactionsQueue = sendMessageToTransactionsQueue;
-module.exports.getDataFromQueue = getDataFromQueue;
 
 
 ///////tests//////////
