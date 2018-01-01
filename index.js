@@ -1,41 +1,56 @@
-if (!!process.env.PORT) {
-  var dotenv= require('dotenv').config();
-}
-var { winston } = require('./elasticsearch/winston');
-const express = require('express');
+// const banks = require('./database/databasePG').retrieveAllUsersAndBank
+// const express = require('express');
 // var elastic = require ('./elasticsearch/elasticsearch.js');
-const queue = require ('./queues/queue.js');
+// const queue = require ('./queues/queue.js');
+const routes = require ('./middleware/routes');
+const db = require('./database/databasePG').pool;
+const { winston, startElasticSearchWithWinston } = require('./elasticsearch/winston');
+
+if (!!process.env.PORT) {
+  const dotenv = require('dotenv').config();
+}
 
 const port = process.env.port || 8080;
 
-var app = express();
-
-// axios.post('localhost:9200/', )
-
-// app.post ('/withdraw/:userID', () => {
-//   userID = req.params.userID
-// })
-
-// app.post ('/cashout/:userID', () => {
-//   userID = req.params.userID
-// })
-
-app.use(express.static('public'));
-
-app.post ('/get_access_token', (req, res) => {
-  // public_token: public_token,
-  console.log ((req.body))
-});
-var server = app.listen(8080, () =>  {
+var server = routes.app.listen(8080, () =>  {
   // console.log("... port %d in %s mode", app.address().port, app.settings.env);
-  console.log('App is listening on port: ', port)
-})
+  console.log('App is listening on port: ', port);
+  winston.info({
+    type: 'listening',
+    message: 'App is listening on port: ', port
+  });
+});
+
+
+db.connect()
+  .then(data=> {
+    console.log('DB Connected');
+    winston.info({
+      type: 'database',
+      message: 'Database Connected'
+    });
+  })
+  .catch(err => {
+    console.log('error loggin into database', err)
+    winston.error({
+      type: 'Database',
+      message: err
+    });
+  });
 
 
 process.on('uncaughtException', (error) => {
-  console.log ('UncaughtError!!', error)
-})
+  console.log ('UncaughtError!!', error);
+  winston.error({
+    type: 'UncaughtError',
+    message: error
+  });
+});
+
+
+startElasticSearchWithWinston();
 
 winston.info({
-  system: "Server Start"
-})
+  type: 'system',
+  message: 'Server Start'
+});
