@@ -1,10 +1,9 @@
-var { winston } = require('../elasticsearch/winston');
-
-const { Client, Pool } = require('pg');
 if (!process.env.PORT) {
   var dotenv= require('dotenv').config();
 }
 
+const { winston } = require('../elasticsearch/winston');
+const { Client, Pool } = require('pg');
 const pool = new Pool();
 ////directly call the variables
 // const pool = new Pool({
@@ -15,17 +14,17 @@ const pool = new Pool();
 //   PGPASSWORD: process.env.PGPASSWORD,
 // });
 
-pool.connect()
-.then(data=> {
-  console.log('DB Connected');
+// pool.connect()
+// .then(data=> {
+//   console.log('DB Connected');
 
-  // console.log(createTransaction(100000005, 1, 5432, 'test'))
-  // console.log(findByTransactionID(100000002, (err, data) => console.log(err, data)))
-  // console.log(updateTransactionStatus(100000002, 'yep'))
-})
-.catch(err => {
-  console.log('error loggin into database', err)
-})
+//   // console.log(createTransaction(100000005, 1, 5432, 'test'))
+//   // console.log(findByTransactionID(100000002, (err, data) => console.log(err, data)))
+//   // console.log(updateTransactionStatus(100000002, 'yep'))
+// })
+// .catch(err => {
+//   console.log('error loggin into database', err)
+// })
 
 
 //id_transaction, user_id, status, amount)
@@ -52,6 +51,7 @@ var createTransaction = function (transactionID, userID, amount, status) {
   })
 }
 
+
 var updateTransactionStatus = function (transactionID, status) {
   pool.query(
     `update transactions
@@ -66,6 +66,7 @@ var updateTransactionStatus = function (transactionID, status) {
     }
   })
 }
+
 
 var findByUserID = function (userID, callback) {
   if (!userID || typeof userID !== 'number') { return undefined }
@@ -82,6 +83,7 @@ var findByUserID = function (userID, callback) {
     // pool.end()
   })
 }
+
 
 var findByTransactionID = function (transactionID, callback) {
   if (!transactionID || typeof transactionID !== 'number') { return undefined }
@@ -100,15 +102,25 @@ var findByTransactionID = function (transactionID, callback) {
 }
 
 
+var retrieveAllUsersAndBank = function () {
+  return new Promise ((resolve, revoke) => {
+    pool.query(
+    'SELECT users.id_user, banks.bankName \
+    from users, banks, accounts'
+    , (err, res) => {
+      if (err) {
+        revoke (err);
+      } else {
+        resolve (res.rows)
+      }
+    })
+  })
+}
 
-// pool.query(
-//   'SELECT * from transactions \
-//   where transactions.user_id = 33421',
-//   (err, res) => {
-//   console.log(err, res)
-//   pool.end()
-// })
 
-
+module.exports.pool = pool;
 module.exports.createTransaction = createTransaction;
+module.exports.updateTransactionStatus = updateTransactionStatus;
 module.exports.findByUserID = findByUserID;
+module.exports.findByTransactionID = findByTransactionID;
+module.exports.retrieveAllUsersAndBank = retrieveAllUsersAndBank;

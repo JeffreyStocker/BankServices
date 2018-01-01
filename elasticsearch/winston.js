@@ -14,13 +14,16 @@ var esTransportOpts = {
   client: client
 };
 
-if (process.env.NODE_ENV !== 'production') {
-  winston.add(winston.transports.File, { filename: './logs/systemLogs.log' });
-}
 winston.remove(winston.transports.Console);
-winston.add(winston.transports.Console, {level: 'silly'});
-winston.add(winston.transports.Elasticsearch, esTransportOpts);
 winston.exitOnError = false;
+
+module.exports.startElasticSearchWithWinston = function () {
+  if (process.env.NODE_ENV !== 'production') {
+    winston.add(winston.transports.File, { filename: './logs/systemLogs.log' });
+  }
+  winston.add(winston.transports.Elasticsearch, esTransportOpts);
+  winston.add(winston.transports.Console, {level: 'silly'});
+}
 
 module.exports.winston = winston;
 
