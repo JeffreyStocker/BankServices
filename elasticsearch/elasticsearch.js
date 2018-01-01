@@ -67,13 +67,13 @@ module.exports.addRecord = addRecord;
 
 
 
-addRecord('testings')
-  .then (data => {
-    // console.log('data', data)
-  })
-  .catch(err => {
-    // console.log('err', err)
-  })
-  // module.exports.addRecord('testings2')
-  // module.exports.addRecord('testings1')
-  // module.exports.addRecord('testings4342')
+// addRecord('testings')
+//   .then (data => {
+//     // console.log('data', data)
+//   })
+//   .catch(err => {
+//     // console.log('err', err)
+//   })
+//   // module.exports.addRecord('testings2')
+//   // module.exports.addRecord('testings1')
+//   // module.exports.addRecord('testings4342')
