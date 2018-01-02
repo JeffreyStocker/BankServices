@@ -7,17 +7,19 @@ var regionalBanks = require('../../example_data/regionalBanks.js');
 
 var allBanksLength = regionalBanks.length + nationalBanks.length;
 
-//will need to run twice to get all 10 million records
-//adjust start to 5000001 and keep amount to add at 5000000
-var integer = 11; 
-// var stop = 1000000;
-console.log('integer:', integer);
-var amountToAdd = 1000000;
-var start = ((integer - 1) * amountToAdd) + 1;
-// var start = 1;
-// var amountToAdd = 5000000;
 
-var baseFolder = './database/mockData'
+var integer = 2;
+
+var amountToAdd = 5000000;
+var start = ((integer - 1) * amountToAdd) + 1;
+var stop = 11000000;
+
+var timeRangeInMonths = 6;
+
+var baseFolder = './database/mockData';
+
+console.log('integer:', integer);
+
 
 var transactionsLocation = '/transactions';
 var transactions = fs.createWriteStream(baseFolder + transactionsLocation, { flags: 'a'});
@@ -29,7 +31,6 @@ var plaidItemsLocation = '/plaidItems';
 var plaidItems = fs.createWriteStream(baseFolder + plaidItemsLocation, { flags: 'a'});
 
 
-
 var returnRandomInArray = function (array = ['']) {
   return array [Math.floor ((Math.random () * array.length - 1) + 0) ];
 };
@@ -39,6 +40,14 @@ var returnRandomNumberUpToMax = function (max = 1) {
 
 var createRandomNumberUpToIntiger = function () {
   return Math.floor((Math.random() * 2147483646) + 1);
+};
+
+var createTimeStamp = function () {
+  var millisecondsInAMonth = 2629746000 * timeRangeInMonths;
+  var randomInt = returnRandomNumberUpToMax(millisecondsInAMonth);
+  var date = new Date();
+  var dateDifference = new Date(date.valueOf() - randomInt);
+  return dateDifference;
 };
 
 var createRandomString = function (length = 37, lowerCase = false) {
@@ -92,18 +101,36 @@ var createPlaidRandomFakeToken = function (accessRandom = false) {
   return token;
 };
 
+var randomStatus = function () {
+  // var status = ['approved', 'declined', 'cancelled', 'confirmed'];
+  var random = returnRandomNumberUpToMax(10000);
+  if (random >= 9995) {
+    return 'approved';
+  } else if (random >= 9990) {
+    return 'declined';
+  } else if (random >= 10) {
+    return 'confirmed';
+  } else if (random >= 0) {
+    return 'cancelled';
+  }
+};
 
 /// main program
 
 for (var i = 0; i < amountToAdd; i ++) {
-  if ( i % 1000000 === 0 ) {
-    console.log(i / 1000000);
+  if ( i >= stop ) {
+    break;
   }
+
+  if ( i % 1000000 === 0 ) {
+    console.log(i * start);
+  }
+
   let currentCount = i + start;
 
   let userID = currentCount;
   let transactionID = currentCount;
-  let status = 'good';
+  let status = randomStatus();
   let amount = Math.floor(Math.random() * 300000) / 100;
   let account = createRandomNumberUpToIntiger();
 
@@ -114,11 +141,12 @@ for (var i = 0; i < amountToAdd; i ++) {
 
   let plaidID = currentCount;
   let plaid_itemID = createRandomString();
+  let timeStamp = createTimeStamp().toUTCString();
 
-  transactions.write (transactionID + '|' + userID + '|' + status + '|' + amount + '\n');
-  plaidItems.write (plaidID + '|' + plaid_itemID + '\n');
-  users.write (currentCount + '|' + id_accounts + '\n');
-  accounts.write (id_accounts + '|' + bankID + '|' + plaid_access_token + '|' + plaid_account_ID + '|' + plaidID + '\n');
+  transactions.write (transactionID + '|' + userID + '|' + status + '|' + amount + '|' + timeStamp + '\n');
+  // plaidItems.write (plaidID + '|' + plaid_itemID + '\n');
+  // users.write (currentCount + '|' + id_accounts + '\n');
+  // accounts.write (id_accounts + '|' + bankID + '|' + plaid_access_token + '|' + plaid_account_ID + '|' + plaidID + '\n');
 
 }
 
@@ -128,4 +156,4 @@ accounts.end();
 plaidItems.end();
 
 
-console.log('complete');
+console.log('writing');

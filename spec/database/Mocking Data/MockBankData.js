@@ -1,7 +1,7 @@
 
 var fs = require('fs');
-var nationalBanks = require('../spec/example_data/nationalBanks.js');
-var regionalBanks = require('../spec/example_data/regionalBanks.js');
+var nationalBanks = require('../../example_data/nationalBanks.js');
+var regionalBanks = require('../../example_data/regionalBanks.js');
 
 
 var allBanks = regionalBanks.concat(nationalBanks);
