@@ -4,6 +4,8 @@
   "description": "Recreation of Venmo",
   "main": "index.js",
   "scripts": {
+    "start": "node ./index.js",
+    "startProd": "NODE_ENV=production node ./index.js",
     "dev": "nodemon index.js",
     "test1": "mocha spec --recursive --timeout 15000 --exit",
     "test": "mocha ./spec/tests --recursive "
