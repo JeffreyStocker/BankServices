@@ -5,7 +5,7 @@ var { winston } = require ('../elasticsearch/winston.js');
 var plaid = require('plaid');
 var axios = require('axios');
 var mockAuthResponse = require('../spec/example_data/plaidAuthorizationResponse.js');
-if (!process.env.useFake || process.env.useFake === 'true') {
+if (process.env.useFake === true || process.env.useFake === 'true') {
   var useFake = true;
 } else {
   var useFake = 'false';
@@ -20,17 +20,28 @@ var access_token = 'access-sandbox-25194add-267c-4e10-95aa-05fab88dc69f';
 
 const plaidClient = new plaid.Client(PLAID_CLIENT_ID, PLAID_SECRET_KEY, PLAID_PUBLIC_KEY, plaid.environments[PLAID_ENV]);
 
-var getAuth = function (access_token) {
-  return new Promise ((resolve, revoke) => {
-    plaidClient.getAuth(access_token, {}, (err, data) => {
-      if (err) {
-        revoke (err);
-      } else {
-        resolve (data);
-      }
+
+if (useFake === 'true' || useFake === true) {
+  var getAuth = function () {
+    return new Promise ((resolve, revoke) => {
+      var data = mockAuthResponse;
+      resolve (data);
     });
-  });
-};
+  };
+} else {
+  var getAuth = function (access_token) {
+    return new Promise ((resolve, revoke) => {
+      plaidClient.getAuth(access_token, {}, (err, data) => {
+        if (err) {
+          revoke (err);
+        } else {
+          resolve (data);
+        }
+      });
+    });
+  };
+}
+
 
 var exchangeTokenForDwollaProcessorToken = function (accessToken, accountID) {
   if (!!useFake) {
@@ -81,14 +92,6 @@ var exchangeTokenForDwollaProcessorToken = function (accessToken, accountID) {
 };
 
 
-if (useFake) {
-  getAuth = function () {
-    return new Promise ((resolve, revoke) => {
-      var data = mockAuthResponse;
-      resolve (data);
-    });
-  };
-}
 
 
 var createItem = function () {
