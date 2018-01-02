@@ -5,6 +5,7 @@
 const routes = require ('./middleware/routes');
 const db = require('./database/databasePG').pool;
 const { winston, startElasticSearchWithWinston } = require('./elasticsearch/winston');
+// var Queue = require ('./ClassQueue.js');
 
 if (!!process.env.PORT) {
   const dotenv = require('dotenv').config();
@@ -31,7 +32,7 @@ db.connect()
     });
   })
   .catch(err => {
-    console.log('error loggin into database', err)
+    console.log('error loggin into database', err);
     winston.error({
       type: 'Database',
       message: err
