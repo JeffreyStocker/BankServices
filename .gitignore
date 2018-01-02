@@ -37,7 +37,8 @@ node_modules/
 bower_components/
 
 #Other Data
-!NotGitData
+!NotGitData/*
 logs
 .env
 database/mockData
+
