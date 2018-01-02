@@ -11,20 +11,20 @@ module.exports.client = client;
 var createIndex = function (name) {
   return client.indices.create({
     index: name
-  })
-}
+  });
+};
 
 createIndex('log')  /// already created // uncomment to create
-.then( status => {
-  console.log('index complete')
-})
-.catch(err => {
-  if (err.body.error.type === "resource_already_exists_exception"){
-    console.log('index in elasticsearch already exists')
-  } else {
-    console.log('Index Creation error', err)
-  }
-})
+  .then( status => {
+    console.log('index complete');
+  })
+  .catch(err => {
+    if (err.body.error.type === 'resource_already_exists_exception') {
+      console.log('index in elasticsearch already exists');
+    } else {
+      console.log('Index Creation error', err);
+    }
+  });
 
 // var mapping = module.exports.mapping = function (index) {
 //   return client.indices.putMapping({
@@ -51,7 +51,7 @@ var ping = module.exports.ping = function () {
       console.log('All is well');
     }
   });
-}
+};
 
 var addRecord = function (data) {
   //https://blog.raananweber.com/2015/11/24/simple-autocomplete-with-elasticsearch-and-node-js/
@@ -61,8 +61,8 @@ var addRecord = function (data) {
     body: {
       data: data
     }
-  })
-}
+  });
+};
 module.exports.addRecord = addRecord;
 
 
