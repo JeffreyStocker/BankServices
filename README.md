@@ -24,10 +24,21 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ## Requirements
 
-- Node 6.9.x
-- Redis 3.2.x
-- Postgresql 9.6.x
-- etc
+- axios 0.17.1
+- dotenv 4.0.0
+- dwolla 0.1.5
+- elasticsearch 14.0.0
+- express 4.16.2
+- memcached 2.2.2
+- pg 7.4.0
+- plaid 2.2.0
+- request 2.83.0
+- sequelize 4.28.1
+- sqs-consume ^3.8.0
+- statsd 0.8.0
+- winston 2.4.0
+- winston-elasticsearch 0.5.5
+- winston-logstash 0.4.0
 
 ## Other Information
 
