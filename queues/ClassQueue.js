@@ -5,6 +5,7 @@ class Queue {
   constructor
   (
     url,
+    handleMessages = function () {},
     options = {},
     count = 1,
     start = true
@@ -12,27 +13,19 @@ class Queue {
 
     this.queues = [];
     this.url = url;
+    this.handleMessages = handleMessages;
 
     this.options = {
       count: options.count || 1,
       batchSize: options.batchSize || 10,
       region: options.region || 'us-east-2',
       start: options.start || false,
-      handleMessages: options.handleMessages || function (message, done) {
-        // console.log('poll queue');
-        try {
-          message = JSON.parse(message.Body);
-        } catch (err) {
-          message = (message);
-        }
-        winston.info({
-          transactionID: message.transactionID,
-          stage: 'Received from Queue'
-        });
-        action(message);
-        return done();
-      },
-      handleEmptyMessages: options.handleEmptyMessages || function () {}.bind(this)
+      // handleMessages: options.handleMessages || function (message, done) {
+      //   // console.log(message)
+      //   action(message);
+      //   return done();
+      // },
+      // handleEmptyMessages: options.handleEmptyMessages || function () {}.bind(this)
     };
     for (var i = 0; i < this.options.count; i++) {
       this.pushQueue();
@@ -85,7 +78,7 @@ class Queue {
       queueUrl: this.url,
       region: this.options.region,
       batchSize: this.options.batchsize,
-      handleMessage: this.options.handleMessages
+      handleMessage: this.handleMessages
     });
 
     queue.on('error', err => {
@@ -93,22 +86,30 @@ class Queue {
       winston.error('Error retrieving Info', err);
     });
     queue.on('empty', function () {
-      console.log('queue is empty');
-      winston.info('queue is empty');
-      this.options.handleEmptyMessages();
+      // console.log('queue is empty');
+      // winston.info('queue is empty');
+      // this.options.handleEmptyMessages();
     });
     return queue;
   }
 
-  pushQueue(start = true) {
-    var queue = this.createQueue();
-    queue.start();
-    this.queues.push(queue);
+  pushQueue(count = 1, start = true) {
+    for (var i = 0; i < count; i ++) {
+      var queue = this.createQueue();
+      queue.start();
+      this.queues.push(queue);
+    }
   }
 
-  popQueue () {
-    var queue = this.queues.pop();
-    queue.stop();
+  popQueue (count = 1) {
+    for (var i = 0; i < count; i ++) {
+      var queue = this.queues.pop();
+      queue.stop();
+    }
+  }
+
+  count () {
+    return this.queues.length;
   }
 
   // changeHandleMessage (func) {
