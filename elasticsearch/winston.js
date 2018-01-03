@@ -25,47 +25,43 @@ module.exports.startElasticSearchWithWinston = function () {
   winston.remove(winston.transports.Console);
   winston.add(winston.transports.Console, {level: 'silly'});
 };
-// module.exports.startElasticSearchWithWinston();
 
-module.exports.winstonDatabase = function () {
 
-};
-
-module.exports.trackTime = function (transactionID, route) {
+module.exports.trackTime = function (transactionID, route, staticData = {}, initialData = {}) {
   var startTime = new Date();
   var lastSearched = startTime;
   var winstonCall = winston;
-  //      type: 'message',
-  // stage: 'send to database',
 
-  var workFunction = function ( dataToSendToWinton = {} ) {
+  var workFunction = function ( dataToSendToWinton = {}, level = 'info' ) {
     var time = new Date();
 
-    var defaultInfo = {
+    var totalData = {
       transactionID: transactionID,
+      route: route,
       totalTime: time.valueOf() - startTime.valueOf(),
-      DeltaTime: time.valueOf() - lastSearched.valueOf(),
-      route: route
+      deltaTime: time.valueOf() - lastSearched.valueOf(),
     };
-    var data = Object.assign(defaultInfo, dataToSendToWinton );
-    winstonCall.info (data);
 
+    var data = Object.assign(totalData, dataToSendToWinton, staticData );
+    console.log(data)
+    if (level = 'info') {
+      winstonCall.info(data);
+    } else if (level = 'warn') {
+      winstonCall.warn (data);
+    } else if (level = 'error') {
+      winstonCall.error (data);
+    } else {
+      winstonCall[level](data);
+    }
     lastSearched = time;
   };
-  workFunction();
+
+  workFunction(initialData);
   return workFunction;
 };
 
 module.exports.winston = winston;
 
-module.exports.retrieveTransactionID = function () {
-  try {
-    var id = transactionID;
-  } catch (err) {
-    var id = 'unknown';
-  }
-  return id;
-};
 ///current thinking on formatting
 /*
 {
