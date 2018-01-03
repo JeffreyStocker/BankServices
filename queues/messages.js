@@ -56,15 +56,23 @@ module.exports.sendMessageToTransactionsQueue = function (transactionID, status)
 
 
 module.exports.sendMessageToCashoutQueue = function (transactionID, callback = () => {}) {
-  var msg = {
-    transactionID: transactionID,
-  };
-  var params = {
-    // MessageBody: JSON.stringify(msg),
-    MessageBody: JSON.stringify(msg),
-    QueueUrl: SQS_CASHOUT_URL
-  };
-  sqs.sendMessage(params, callback);
+  return new Promise ((resolve, revoke) => {
+    var msg = {
+      transactionID: transactionID,
+    };
+    var params = {
+      // MessageBody: JSON.stringify(msg),
+      MessageBody: JSON.stringify(msg),
+      QueueUrl: SQS_CASHOUT_URL
+    };
+    sqs.sendMessage(params,(err, response) => {
+      if (err) {
+        revoke (err);
+      } else {
+        resolve (response);
+      }
+    });
+  });
 };
 
 
