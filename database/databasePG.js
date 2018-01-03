@@ -29,11 +29,6 @@ const pool = new Pool();
 
 //id_transaction, user_id, status, amount)
 var createTransaction = function (transactionID, userID, amount, status) {
-  winston.log({
-    transactionID: transactionID || 'unknown',
-    location: 'database',
-    stage: 'start'
-  });
   return new Promise ((resolve, revoke) => {
     pool.query(`insert into "transactions" VALUES (${transactionID}, '${userID}', '${status}', ${amount});`, (err, results) => {
       // console.log(err, results)
@@ -53,18 +48,20 @@ var createTransaction = function (transactionID, userID, amount, status) {
 
 
 var updateTransactionStatus = function (transactionID, status) {
-  pool.query(
-    `update transactions
-    set status = '${status}'
-    where transactions.id_transaction = ${transactionID};`,
-    (err, results) => {
-      if (err) {
-        console.log(err);
-        return err;
-      } else {
-        return results;
-      }
-    });
+  return new Promise ((resolve, revoke) => {
+    pool.query(
+      `update transactions
+      set status = '${status}'
+      where transactions.id_transaction = ${transactionID};`,
+      (err, results) => {
+        if (err) {
+          // console.log(err);
+          revoke(err);
+        } else {
+          resolve(results);
+        }
+      });
+  });
 };
 
 

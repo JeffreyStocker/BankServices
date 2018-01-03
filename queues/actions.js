@@ -1,10 +1,10 @@
-var { read } = require ('fs');
-var { transactionById } = require('dwolla');
-var { sendMessageToCashoutQueue, sendMessageToTransactionsQueue } = require('./messages');
-const { winston, retrieveTransactionID, trackTime } = require('../elasticsearch/winston');
+const { read } = require ('fs');
+const { transactionById } = require('dwolla');
+const { sendMessageToCashoutQueue, sendMessageToTransactionsQueue } = require('./messages');
+const { winston, trackTime } = require('../elasticsearch/winston');
 
-var db = require ('../database/databasePG.js');
-var dwolla = require ('../middleware/dwolla.js');
+const db = require ('../database/databasePG.js');
+const dwolla = require ('../middleware/dwolla.js');
 const plaid = require('../middleware/plaid');
 
 var parseBodyOfMessage = function (message) {
@@ -19,140 +19,102 @@ var parseBodyOfMessage = function (message) {
 
 var action = function (actionData) {
   var status;
-  var stats = {};
-  stats.startTime = new Date();
-
   actionData = parseBodyOfMessage(actionData);
-  // console.log('route', actionData);
-  // console.log('route', actionData.route);
-  var transactionID = actionData.transactionID;
-  var time = new Date();
-  winston.info({
-    transactionID: transactionID,
-    type: 'message',
-    stage: 'received',
-    deltaTime: time.valueOf() - stats.startTime.valueOf(),
-    route: actionData.route
+  var tracker = trackTime(actionData.transactionID, actionData.route, {type: 'message'}, {
+    stage: 'Received from Transaction Queue',
   });
+
   plaid.getAuth()
     .then (apiData =>{
-      // console.log('api data', apiData)
+      tracker({
+        stage: 'Received Authorization from Plaid',
+      });
       var accounts = plaid.checkIfUserHasAccountsWithEnoughBalance(apiData, actionData.amount);
       if (!accounts) {
         status = 'declined';
       } else {
         status = 'approved';
       }
-    })
-    .then((data) => {
-      try {
-        var id = transactionID;
-      } catch (err) {
-        var id = 'unknown';
-      }
-      var time = new Date();
-      winston.info({
-        transactionID: id,
-        type: 'message',
-        stage: 'create Transaction',
-        deltaTime: time.valueOf() - stats.startTime.valueOf(),
-        route: actionData.route
-      });
-
       return db.createTransaction(actionData.transactionID, actionData.userID, actionData.amount, status);
     })
     .then ((data) => {
-      // console.log(data);
-      var stopTime = new Date();
-      var time = new Date();
-      console.log('time', stopTime.valueOf() - stats.startTime.valueOf());
-      winston.info({
-        transactionID: transactionID,
-        type: 'message',
-        stage: 'send to database',
-        deltaTime: time.valueOf() - stats.startTime.valueOf(),
-        route: actionData.route
+      tracker({
+        stage: 'Wrote Transaction To Database',
       });
       return sendMessageToTransactionsQueue (actionData.transactionID, status);
     })
     .then ((data)=> {
-      var time = new Date();
-      // console.log('success data', data);
-      winston.info({
-        transactionID: transactionID,
-        type: 'message',
-        stage: 'send to transaction queue',
-        deltaTime: time.valueOf() - stats.startTime.valueOf(),
-        route: actionData.route
+      tracker({
+        stage: 'Sent to Transaction Queue',
       });
+      if (actionData.route === 'cashout') {
+        sendMessageToCashoutQueue(actionData.transactionID)
+          .then (results => {
+            tracker({
+              stage: 'Sent to Cashout Queue',
+            });
+          });
+      } else if (actionData.route === 'withdraw') {
+      } else {
+        throw 'no route found';
+      }
     })
     .catch (err => {
-      var time = new Date();
-      winston.warn({
-        transactionID: transactionID,
-        type: 'message',
+      tracker({
         stage: 'error',
-        route: actionData.route,
-        deltaTime: time.valueOf() - stats.startTime.valueOf(),
         error: err
-      });
+      }, 'warn');
     });
-
-  if (actionData.route === 'cashout') {
-    sendMessageToCashoutQueue(actionData.transactionID);
-  } else if (actionData.route === 'withdraw') {
-  } else {
-    console.log('no route found');
-  }
 };
 
 
 var actionsForBankDeposits = function (data) {
-  var stats = {};
-  stats.startTime = new Date();
-
   console.log('actionsForBankDeposits start');
+
   var data = parseBodyOfMessage(data);
   var transactionID = data.transactionID;
-  // console.log('route', actionData.route);
-  // transactionID: retrieveTransactionID(transactionID);
-  var time = new Date();
-  winston.info({
-    transactionID: transactionID,
-    type: 'BankDeposits',
-    stage: 'received from queue',
-    deltaTime: time.valueOf() - stats.startTime.valueOf(),
-    route: 'confirmation'
+
+  var tracker = trackTime(data.transactionID, 'confirmation', {type: 'BankDeposits'}, {
+    stage: 'Received from Bank Deposits Queue',
   });
+
   db.findProcessTokenByTransactionID(transactionID)
     .then(data => {
       console.log(data);
+      tracker ({
+        stage: 'Search Database for Process Token',
+      });
       return dwolla.transferFunds(data.amount, 'processorToken');
     })
     .then (transferResults => {
+      tracker ({
+        stage: 'Dwolla Transfered Funds Received Confirmations',
+      });
       var status;
       if (transferResults === true) {
         status = 'confirmed';
       } else if (transferResults === false) {
         status = 'cancelled';
       }
-      db.updateTransactionStatus(transactionID, status);
+      return db.updateTransactionStatus(transactionID, status);
+    })
+    .then (results => {
+      tracker ({
+        stage: 'Updated Database',
+      });
       return sendMessageToTransactionsQueue(transactionID, status);
     })
     .then(data => {
-
+      tracker ({
+        stage: 'Sent To Transaction Queue',
+      });
     })
     .catch (err => {
       console.log(err);
-      var time = new Date();
-      winston.warn({
-        transactionID: transactionID,
-        type: 'BankDeposits',
+      tracker({
         stage: 'error',
-        deltaTime: time.valueOf() - stats.startTime.valueOf(),
-        route: 'confirmation',
         error: err
-      });
+      }, 'warn');
     });
 };
 
