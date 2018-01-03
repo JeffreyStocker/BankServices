@@ -1,4 +1,4 @@
-const banksData = require('../database/databasePG').retrieveAllUsersAndBank
+const banksData = require('../database/databasePG').retrieveAllUsersAndBank;
 const { winston } = require('../elasticsearch/winston');
 const express = require('express');
 const queue = require ('../queues/queue.js');
@@ -21,13 +21,13 @@ var app = express();
 
 app.get('/users/banks', (req, res) => {
   banksData()
-  .then((data) => {
-    res.status(200).json(data);
-    // res.send(data);
-  })
-  .catch(err => {
-    res.status(400).send(err);
-  });
+    .then((data) => {
+      res.status(200).json(data);
+      // res.send(data);
+    })
+    .catch(err => {
+      res.status(400).send(err);
+    });
 });
 
 

@@ -124,6 +124,7 @@ var createRandomString = function (length = 37, lowerCase = false) {
 
 
 var runMessages = function () {
+  console.log('300');
   for (var i = 0; i < 300; i ++) {
     //"Action=SendMessage&QueueUrl=http%3A%2F%2Fsqs.docker%3A9494%2Ftest-queue&MessageBody=testing123&
     axios.post('http://localhost:8000/inputToBankServices',
