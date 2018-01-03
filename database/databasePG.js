@@ -33,7 +33,7 @@ var createTransaction = function (transactionID, userID, amount, status) {
     transactionID: transactionID || 'unknown',
     location: 'database',
     stage: 'start'
-  })
+  });
   return new Promise ((resolve, revoke) => {
     pool.query(`insert into "transactions" VALUES (${transactionID}, '${userID}', '${status}', ${amount});`, (err, results) => {
       // console.log(err, results)
@@ -41,15 +41,15 @@ var createTransaction = function (transactionID, userID, amount, status) {
         transactionID: transactionID || 'unknown',
         location: 'database',
         stage: 'end'
-      })
+      });
       if (err) {
         revoke(err);
       } else {
         resolve(results);
       }
-    })
-  })
-}
+    });
+  });
+};
 
 
 var updateTransactionStatus = function (transactionID, status) {
@@ -57,65 +57,105 @@ var updateTransactionStatus = function (transactionID, status) {
     `update transactions
     set status = '${status}'
     where transactions.id_transaction = ${transactionID};`,
-   (err, results) => {
-     if (err) {
-      console.log(err)
-      return err;
-    } else {
-      return results;
-    }
-  })
-}
+    (err, results) => {
+      if (err) {
+        console.log(err);
+        return err;
+      } else {
+        return results;
+      }
+    });
+};
 
 
 var findByUserID = function (userID, callback) {
-  if (!userID || typeof userID !== 'number') { return undefined }
+  if (!userID || typeof userID !== 'number') { return undefined; }
   pool.query(
     'SELECT * from transactions \
     where transactions.user_id =' + userID,
     (err, res) => {
     // console.log(err, res)
-    if (err) {
-      callback (err, null);
-    } else {
-      callback (null, res.rows)
-    }
-    // pool.end()
-  })
-}
+      if (err) {
+        callback (err, null);
+      } else {
+        callback (null, res.rows);
+      }
+      // pool.end()
+    });
+};
 
 
-var findByTransactionID = function (transactionID, callback) {
-  if (!transactionID || typeof transactionID !== 'number') { return undefined }
+var findByTransactionID_cb = function (transactionID, callback) {
+  if (!transactionID || typeof transactionID !== 'number') { return undefined; }
   pool.query(
     'SELECT * from transactions \
     where transactions.id_transaction =' + transactionID,
     (err, res) => {
     // console.log(err, res)
-    if (err) {
-      callback (err, null);
-    } else {
-      callback (null, res.rows)
-    }
-    // pool.end()
-  })
-}
+      if (err) {
+        callback (err, null);
+      } else {
+        callback (null, res.rows);
+      }
+      // pool.end()
+    });
+};
+
+var findByTransactionID = function (transactionID) {
+  return new Promise ((resolve, revoke) => {
+    if (!transactionID || typeof transactionID !== 'number') { revoke ('transaction ID missing or not a number') }
+    pool.query(
+      'SELECT * from transactions \
+      where transactions.id_transaction =' + transactionID,
+      (err, res) => {
+        if (err) {
+          revoke (err);
+        } else {
+          resolve (res.rows[0]);
+        }
+      });
+  });
+};
+
+
+module.exports.findProcessTokenByTransactionID = function (transactionID) {
+  return new Promise ((resolve, revoke) => {
+    if (!transactionID || typeof transactionID !== 'number') { revoke ('transaction ID missing or not a number'); }
+    pool.query(
+      // 'SELECT users.id_user, accounts.plaid_access_token \
+      'select transactions.id_transaction, accounts.plaid_access_token \
+      from transactions \
+      inner join users on transactions.id_transaction = users.id_user\
+      inner join accounts on users.account_id = accounts.id_account \
+      where transactions.id_transaction =' + transactionID,
+      (err, res) => {
+        if (err) {
+          revoke (err);
+        } else {
+          resolve (res.rows);
+        }
+      });
+  });
+};
 
 
 var retrieveAllUsersAndBank = function () {
   return new Promise ((resolve, revoke) => {
     pool.query(
-    'SELECT users.id_user, banks.bankName \
-    from users, banks, accounts'
-    , (err, res) => {
-      if (err) {
-        revoke (err);
-      } else {
-        resolve (res.rows)
-      }
-    })
-  })
-}
+      'select users.id_user, banks."bankName" \
+      from users  \
+      inner join accounts on users.account_id = accounts.id_account \
+      inner join banks on accounts.bank_id = banks.id_bank'
+      , (err, res) => {
+        if (err) {
+          revoke (err);
+        } else {
+          resolve (res.rows);
+        }
+      });
+  });
+};
+
 
 
 module.exports.pool = pool;

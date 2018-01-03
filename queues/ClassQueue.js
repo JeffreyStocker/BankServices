@@ -1,5 +1,6 @@
 var Consumer = require('sqs-consumer');
 var { winston } = require ('../elasticsearch/winston');
+var sqs = require('./awsInit.js').sqs;
 
 class Queue {
   constructor
@@ -48,7 +49,7 @@ class Queue {
     });
   }
 
-  haveRunning(number = 0) {
+  countRunning(number = 0) {
     for (var i = 0; i < number; i ++) {
       this.queues[i].start();
     }
@@ -73,6 +74,29 @@ class Queue {
     });
   }
 
+  sendBatch(messages = [] ) {
+    var messageObject = [];
+    messages.forEach(message => {
+      var newMessage = {
+        Id: message.transactionID,
+        MessageBody: JSON.stringify(message)
+      };
+    });
+    return new Promise ((resolve, revoke) => {
+      var params = {
+        SendMessageBatchRequestEntry: messageObject,
+        QueueUrl: this.url
+      };
+      sqs.SendMessageBatch(params, (err, response) => {
+        if (err) {
+          revoke (err);
+        } else {
+          resolve (response);
+        }
+      });
+    });
+  }
+
   createQueue () {
     var queue = Consumer.create({
       queueUrl: this.url,
@@ -86,7 +110,7 @@ class Queue {
       winston.error('Error retrieving Info', err);
     });
     queue.on('empty', function () {
-      // console.log('queue is empty');
+      console.log('queue is empty');
       // winston.info('queue is empty');
       // this.options.handleEmptyMessages();
     });

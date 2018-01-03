@@ -17,7 +17,7 @@ var server = routes.app.listen(8080, () =>  {
   // console.log("... port %d in %s mode", app.address().port, app.settings.env);
   console.log('App is listening on port: ', port);
   winston.info({
-    type: 'listening',
+    type: 'system',
     message: 'App is listening on port: ', port
   });
 });
@@ -40,13 +40,13 @@ db.connect()
   });
 
 
-process.on('uncaughtException', (error) => {
-  console.log ('UncaughtError!!', error);
-  winston.error({
-    type: 'UncaughtError',
-    message: error
-  });
-});
+// process.on('uncaughtException', (error) => {
+//   console.log ('UncaughtError!!', error);
+//   winston.error({
+//     type: 'UncaughtError',
+//     message: error
+//   });
+// });
 
 
 startElasticSearchWithWinston();

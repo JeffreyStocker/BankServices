@@ -20,24 +20,17 @@ var { winston } = require ('../elasticsearch/winston');
 var { action, actionsForBankDeposits } = require('./actions.js');
 
 
-
-
-///////tests//////////
-// getDataFromQueue()
-// winston.log('info', 'testings')
-
 var queueToBankServices = new Queue(SQS_BankServices, (message, done) => {
   action(message);
   return done();
 });
 queueToBankServices.pushQueue(2);
-console.log(queueToBankServices.count());
+// console.log(queueToBankServices.count());
 
-// queueToBankServices.stop();
-// queueToBankServices.start();
-// queueToBankServices.stop();
-
-// queueToBankServices.start();
-
+var queueToBankDeposits = new Queue(SQS_CASHOUT_URL, (message, done) => {
+  actionsForBankDeposits(message);
+  return done();
+});
+queueToBankDeposits.start();
 
 

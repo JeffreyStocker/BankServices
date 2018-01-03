@@ -7,7 +7,7 @@ var fake = process.env.USEFAKE;
 // var Consumer = require('sqs-consumer'); //https://www.npmjs.com/package/sqs-consumer
 // var plaid = require ('../middleware/plaid.js');
 var { winston } = require ('../elasticsearch/winston');
-
+var { sqs } = require ('./awsinit.js');
 // var db = require('../database/databasePG.js');
 // SQS_URL = process.env.NODE_ENV === 'production' ? process.env.SQS_URL : process.env.SQS_MOCK_URL
 
@@ -26,63 +26,58 @@ if (fake === 'false' || fake === false) {
   var SQS_BankServices = 'http://localhost:8000/inputToBankServices';
 }
 
-var AWS = require('aws-sdk');
-AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
-var sqs = new AWS.SQS({
-  region: 'us-east-2',
-});
+// var AWS = require('aws-sdk');
+// AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
+// var sqs = module.exports.sqs = new AWS.SQS({
+//   region: 'us-east-2',
+// });
 
 
-var sendMessageToTransactionsQueue
-= module.exports.sendMessageToTransactionsQueue
-= function (transactionID, status) {
-    return new Promise ((resolve, revoke) => {
-      var msg = {
-        transactionID: transactionID,
-        status: status //must be 'approved'/ 'declined' / 'cancelled' or 'confirmed'
-      };
-      var params = {
-        // MessageBody: JSON.stringify(msg),
-        MessageBody: JSON.stringify(msg),
-        QueueUrl: SQS_TRANSACTION_URL
-      };
-      sqs.sendMessage(params, (err, response) => {
-        if (err) {
-          revoke (err);
-        } else {
-          resolve (response);
-        }
-      });
-    });
-  };
-
-// console.log(sendMessageToTransactionsQueue.toString())
-
-var sendMessageToCashoutQueue
-= module.exports.sendMessageToCashoutQueue
-= function (transactionID, callback = () => {}) {
+module.exports.sendMessageToTransactionsQueue = function (transactionID, status) {
+  return new Promise ((resolve, revoke) => {
     var msg = {
       transactionID: transactionID,
+      status: status //must be 'approved'/ 'declined' / 'cancelled' or 'confirmed'
     };
     var params = {
       // MessageBody: JSON.stringify(msg),
-      MessageBody: JSON.stringify(message),
+      MessageBody: JSON.stringify(msg),
       QueueUrl: SQS_TRANSACTION_URL
     };
-    sqs.sendMessage(params, callback);
-  };
-
-
-var handleBankQueuesMessages = function () {
-  try {
-    message = JSON.parse(message.Body);
-  } catch (err) {
-    message = (message);
-  }
-  winston.info({
-    transactionID: message.transactionID,
-    stage: 'Received from Queue'
+    sqs.sendMessage(params, (err, response) => {
+      if (err) {
+        revoke (err);
+      } else {
+        resolve (response);
+      }
+    });
   });
-  actionsForBankDeposits(message);
-  return done();
 };
+
+
+module.exports.sendMessageToCashoutQueue = function (transactionID, callback = () => {}) {
+  var msg = {
+    transactionID: transactionID,
+  };
+  var params = {
+    // MessageBody: JSON.stringify(msg),
+    MessageBody: JSON.stringify(msg),
+    QueueUrl: SQS_CASHOUT_URL
+  };
+  sqs.sendMessage(params, callback);
+};
+
+
+// var handleBankQueuesMessages = function () {
+//   try {
+//     message = JSON.parse(message.Body);
+//   } catch (err) {
+//     message = (message);
+//   }
+//   winston.info({
+//     transactionID: message.transactionID,
+//     stage: 'Received from Queue'
+//   });
+//   actionsForBankDeposits(message);
+//   return done();
+// };
