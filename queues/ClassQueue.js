@@ -7,9 +7,7 @@ class Queue {
   (
     url,
     handleMessages = function () {},
-    options = {},
-    count = 1,
-    start = false
+    options = {}
   ) {
 
     this.queues = [];
@@ -85,6 +83,7 @@ class Queue {
     for (var i = 0; i < count; i ++) {
       var queue = this.createQueue();
       this.queues.push(queue);
+
       start && queue.start();
     }
   }
