@@ -1,13 +1,15 @@
-const { read } = require ('fs');
-const { transactionById } = require('dwolla');
-const { sendMessageToCashoutQueue, sendMessageToTransactionsQueue } = require('./messages');
-const { winston, trackTime } = require('../elasticsearch/winston');
-
 const db = require ('../database/databasePG.js');
 const dwolla = require ('../middleware/dwolla.js');
 const plaid = require('../middleware/plaid');
 
+const { read } = require ('fs');
+const { transactionById } = require('dwolla');
+const { sendMessageToCashoutQueue, sendMessageToTransactionsQueue } = require('./messages');
+const { winston, trackTime } = require('../elasticsearch/winston');
+const { queueToBankServices, queueToTransactions, queueToBankDeposits } = require ('./queue.js');
+
 var parseBodyOfMessage = function (message) {
+  console.log(message);
   try {
     message = JSON.parse(message.Body);
   } catch (err) {
@@ -42,13 +44,15 @@ var action = function (actionData) {
         stage: 'Wrote Transaction To Database',
       });
       return sendMessageToTransactionsQueue (actionData.transactionID, status);
+      return queueToTransactions.send(actionData.transactionID, status);
     })
     .then ((data)=> {
       tracker({
         stage: 'Sent to Transaction Queue',
       });
       if (actionData.route === 'cashout') {
-        sendMessageToCashoutQueue(actionData.transactionID)
+        queueToBankDeposits.send(actionData.transactionID)
+        // sendMessageToCashoutQueue(actionData.transactionID)
           .then (results => {
             tracker({
               stage: 'Sent to Cashout Queue',
@@ -80,7 +84,6 @@ var actionsForBankDeposits = function (data) {
 
   db.findProcessTokenByTransactionID(transactionID)
     .then(data => {
-      console.log(data);
       tracker ({
         stage: 'Search Database for Process Token',
       });
@@ -102,7 +105,9 @@ var actionsForBankDeposits = function (data) {
       tracker ({
         stage: 'Updated Database',
       });
-      return sendMessageToTransactionsQueue(transactionID, status);
+      console.log('queueToTransactions', queueToTransactions)
+      return queueToTransactions.send(transactionID, status);
+      // return sendMessageToTransactionsQueue(transactionID, status);
     })
     .then(data => {
       tracker ({

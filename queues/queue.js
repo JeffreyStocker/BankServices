@@ -1,36 +1,38 @@
-var Queue = require ('./ClassQueue.js');if (!process.env.PORT) {
+var Queue = require ('./ClassQueue.js');
+
+var { winston } = require ('../elasticsearch/winston');
+var { action, actionsForBankDeposits } = require('./actions.js');
+
+if (!process.env.PORT) {
   var dotenv = require('dotenv').config();
 }
-var fake = process.env.USEFAKE;
 
-if (fake === 'false' || fake === false) {
+if (process.env.USEMOCKSQS === 'false') {
   console.log('Using Real SQS Queues');
-  var SQS_URL = process.env.SQS_URL;
-  var SQS_TRANSACTION_URL = 'https://sqs.us-east-2.amazonaws.com/722156248668/outputToTransactions';
-  var SQS_CASHOUT_URL = 'https://sqs.us-east-2.amazonaws.com/722156248668/cashout';
-  var SQS_BankServices = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices';
+  var SQS_TRANSACTION_URL = process.env.SQS_TRANSACTION_URL;
+  var SQS_CASHOUT_URL = process.env.SQS_CASHOUT_URL;
+  var SQS_BankServices = process.env.SQS_BankServices;
 } else {
   console.log('Using Mock SQS Queues');
-  var SQS_URL = 'http://localhost:8000/test';
   var SQS_TRANSACTION_URL = 'http://localhost:8000/outputToTransactions';
   var SQS_CASHOUT_URL = 'http://localhost:8000/cashout';
   var SQS_BankServices = 'http://localhost:8000/inputToBankServices';
 }
-var { winston } = require ('../elasticsearch/winston');
-var { action, actionsForBankDeposits } = require('./actions.js');
 
-
-var queueToBankServices = new Queue(SQS_BankServices, (message, done) => {
+module.exports.queueToBankServices = new Queue(SQS_BankServices, (message, done) => {
   action(message);
   return done();
 });
-queueToBankServices.pushQueue(2);
+// module.exports.queueToBankServices.pushQueue(2);
 // console.log(queueToBankServices.count());
 
-var queueToBankDeposits = new Queue(SQS_CASHOUT_URL, (message, done) => {
+module.exports.queueToTransactions = new Queue (SQS_TRANSACTION_URL, (message, done) => {
+  // return done();
+});
+
+module.exports.queueToBankDeposits = new Queue(SQS_CASHOUT_URL, (message, done) => {
   actionsForBankDeposits(message);
   return done();
 });
-queueToBankDeposits.start();
 
 
