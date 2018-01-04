@@ -1,13 +1,12 @@
 var AWS = require('aws-sdk');
 const env = require('dotenv').config();
-var fake = true;
 var axios = require('axios');
-// AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
 var url = 'http://localhost:8000/';
-var test = 'test';
 
+var fake = false;
+var destintationURL = process.env.SQS_BankServices;
+var count = 500;
 if (fake === true) {
-
   AWS.config.update({
     sqs_endpoint: 'localhost',
     sqs_port: 4789,
@@ -21,11 +20,8 @@ if (fake === true) {
   var sqsURL = 'localhost:4568';
 } else {
   AWS.config.update({accessKeyId: process.env.AWS_PUBLIC_KEY, secretAccessKey: process.env.AWS_SECRET_KEY});
-  var sqsURL = 'https://sqs.us-east-2.amazonaws.com/722156248668/inputToBankServices';
+  var sqsURL = process.env.SQS_BankServices;
 }
-
-// // var sqsURL = 'http://localhost:1000/722156248668/inputToBankServices'
-
 var sqs = new AWS.SQS({
   region: 'us-east-2',
 });
@@ -45,8 +41,9 @@ module.exports.sendMessageToQueue = function (message, callback) {
 var returnRandomInArray = function (array = ['']) {
   return array[Math.floor((Math.random() * array.length - 1) + 0) ];
 };
-var returnRandomNumberUpToMax = function (max = 1) {
-  return Math.floor((Math.random() * max) + 1);
+
+var returnRandomNumberUpToMax = function (max = 1, min = 1) {
+  return Math.floor((Math.random() * (max - min)) + min);
 };
 
 var createRandomNumberUpToIntiger = function () {
@@ -67,84 +64,64 @@ var createRandomString = function (length = 37, lowerCase = false) {
   return output;
 };
 
-// for (var i = 0; i < 20; i ++) {
-//   // var data = {
-//   //   transactionID: Math.floor((Math.random()*2147483640) + 10000001),
-//   //   route: Math.floor((Math.random()*2)+1) === 1 ? 'cashout' : 'withdraw',
-//   //   userID: Math.floor((Math.random()*2147483640) + 10000001),
-//   //   amount: Math.floor(Math.random()*300000)/100
-//   // }
 
-//   module.exports.sendMessageToQueue({
-//     transactionID: Math.floor((Math.random()*2147483640) + 10000001),
-//     route: Math.floor((Math.random()*2)+1) === 1 ? 'cashout' : 'withdraw',
-//     userID: Math.floor((Math.random()*2147483640) + 10000001),
-//     amount: Math.floor(Math.random()*300000)/100
-//   }, (err, returnedData) => {
-//     if (err) {
-//       console.log('Send Messages to Queue Error', err);
-//     } else {
-//       // console.log(data)
-//       console.log(returnedData);
-//     }
-//   })
-// }
+var localMockFunction = function () {
+  //"Action=SendMessage&QueueUrl=http%3A%2F%2Fsqs.docker%3A9494%2Ftest-queue&MessageBody=testing123&
+  axios.post(destintationURL,
+    'Action=SendMessage&QueueUrl=localHost/test&MessageBody=' + JSON.stringify(
+      {
+        transactionID: Math.floor((Math.random() * (2147483640 - 10000001)) + 10000001),
+        route: Math.floor((Math.random() * 2) + 1) === 1 ? 'cashout' : 'withdraw',
+        userID: Math.floor((Math.random() * 2147483640) + 10000001),
+        amount: Math.floor(Math.random() * 300000) / 100,
+        message: JSON.stringify()
+      }
+    )
+  )
+    .then (status => {
+      // console.log(status.data);
+    })
+    .catch(err => {
+      // console.log(err.code);
+      console.log(err);
+    });
+};
 
-// axios.post ('http://localhost:8000/',
-// `Action=CreateQueue&QueueName=test&AWSAccessKeyId=access%20key%20id` )
-// .then (status => {
-//   console.log(status.data)
-//   for (var i = 0; i < 20; i ++) {
-//     //"Action=SendMessage&QueueUrl=http%3A%2F%2Fsqs.docker%3A9494%2Ftest-queue&MessageBody=testing123&
-//     var message = JSON.stringify(
-//       {
-//         transactionID: Math.floor((Math.random()*2147483640) + 10000001),
-//         route: Math.floor((Math.random()*2)+1) === 1 ? 'cashout' : 'withdraw',
-//         userID: Math.floor((Math.random()*2147483640) + 10000001),
-//         amount: Math.floor(Math.random()*300000)/100,
-//         message: JSON.stringify()
-//       }
-//     )
-//     axios.post('http://localhost:8000/test',
-//       `Action=SendMessage&QueueUrl=localHost/test&MessageBody=${message}`
-//       )
-//       .then (status => {
-//         console.log(status.data)
-//       })
-//       .catch(err => {
-//         console.log(err.response.data)
-//       })
-//     }
-
-// })
-// .catch (err => {
-//   console.log(err.response.status, err.response.statusText);
-// })
-
+var sqsMockFunction = function () {
+  module.exports.sendMessageToQueue({
+    transactionID: Math.floor((Math.random() * (2147483640 - 10000001)) + 10000001),
+    route: Math.floor((Math.random() * 2) + 1) === 1 ? 'cashout' : 'withdraw',
+    userID: Math.floor((Math.random() * 2147483640) + 10000001),
+    amount: Math.floor(Math.random() * 300000) / 100
+  }, (err, returnedData) => {
+    if (err) {
+      console.log('Send Messages to Queue Error', err);
+    } else {
+      // console.log(data)
+      // console.log(returnedData);
+    }
+  });
+};
 
 
 var runMessages = function () {
   console.log('300');
-  for (var i = 0; i < 300; i ++) {
-    //"Action=SendMessage&QueueUrl=http%3A%2F%2Fsqs.docker%3A9494%2Ftest-queue&MessageBody=testing123&
-    axios.post('http://localhost:8000/inputToBankServices',
-      'Action=SendMessage&QueueUrl=localHost/test&MessageBody=' + JSON.stringify(
-        {
-          transactionID: Math.floor((Math.random() * 2147483640) + 10000001),
-          route: Math.floor((Math.random() * 2) + 1) === 1 ? 'cashout' : 'withdraw',
-          userID: Math.floor((Math.random() * 2147483640) + 10000001),
-          amount: Math.floor(Math.random() * 300000) / 100,
-          message: JSON.stringify()
-        }
-      )
-    )
-      .then (status => {
-        // console.log(status.data);
-      })
-      .catch(err => {
-        console.log(err.code);
-      });
+  for (var i = 0; i < count; i ++) {
+    if (fake === false ) {
+      sqsMockFunction();
+    } else {
+      localMockFunction();
+    }
   }
 };
 
-var set = setInterval (runMessages, 2000 );
+
+
+
+
+
+
+
+
+// var set = setInterval (runMessages, 2000 );
+var set = setTimeout (runMessages, 2000 );
