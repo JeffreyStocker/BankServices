@@ -1,6 +1,9 @@
-const { queueToBankServices, queueToTransactions, queueToBankDeposits } = require ('./queues/queue.js');
+process.env.NODE_ENV = 'development';
+
 const routes = require ('./middleware/routes');
 const db = require('./database/databasePG').pool;
+
+const { queueToBankServices, queueToTransactions, queueToBankDeposits } = require ('./queues/queue.js');
 const { winston, startElasticSearchWithWinston } = require('./elasticsearch/winston');
 
 if (!!process.env.PORT) {
@@ -8,6 +11,10 @@ if (!!process.env.PORT) {
 }
 
 const port = process.env.port || 8080;
+if (!process.env.NODE_ENV) {
+}
+
+console.log('Node Enviroment: ', process.env.NODE_ENV);
 
 var server = routes.app.listen(8080, () => {
   // console.log("... port %d in %s mode", app.address().port, app.settings.env);
@@ -34,6 +41,10 @@ db.connect()
       message: err
     });
   });
+
+
+queueToBankServices.pushQueue(500);
+queueToBankServices.start();
 
 
 // process.on('uncaughtException', (error) => {
