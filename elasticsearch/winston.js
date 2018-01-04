@@ -16,14 +16,14 @@ var esTransportOpts = {
 };
 
 // winston.exitOnError = false;
+winston.remove(winston.transports.Console);
 
 module.exports.startElasticSearchWithWinston = function () {
   if (process.env.NODE_ENV !== 'production') {
   }
-  winston.add(winston.transports.File, { filename: './logs/systemLogs.log' });
+  // winston.add(winston.transports.File, { filename: './logs/systemLogs.log' });
   winston.add(winston.transports.Elasticsearch, esTransportOpts);
-  winston.remove(winston.transports.Console);
-  winston.add(winston.transports.Console, {level: 'silly'});
+  // winston.add(winston.transports.Console, {level: 'silly'});
 };
 
 
@@ -43,7 +43,7 @@ module.exports.trackTime = function (transactionID, route, staticData = {}, init
     };
 
     var data = Object.assign(totalData, dataToSendToWinton, staticData );
-    console.log(data);
+    // console.log(data);
     if (level = 'info') {
       winstonCall.info(data);
     } else if (level = 'warn') {
