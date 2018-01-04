@@ -9,7 +9,7 @@ class Queue {
     handleMessages = function () {},
     options = {},
     count = 1,
-    start = true
+    start = false
   ) {
 
     this.queues = [];
@@ -49,7 +49,9 @@ class Queue {
     });
   }
 
-  countRunning(number = 0) {
+  setRunningNum(number = 0) {
+    number > this.queues.count ? number = this.queues.count : null;
+
     for (var i = 0; i < number; i ++) {
       this.queues[i].start();
     }
@@ -74,28 +76,29 @@ class Queue {
     });
   }
 
-  sendBatch(messages = [] ) {
-    var messageObject = [];
-    messages.forEach(message => {
-      var newMessage = {
-        Id: message.transactionID,
-        MessageBody: JSON.stringify(message)
-      };
-    });
-    return new Promise ((resolve, revoke) => {
-      var params = {
-        SendMessageBatchRequestEntry: messageObject,
-        QueueUrl: this.url
-      };
-      sqs.SendMessageBatch(params, (err, response) => {
-        if (err) {
-          revoke (err);
-        } else {
-          resolve (response);
-        }
-      });
-    });
-  }
+  //WIP
+  // sendBatch(messages = [] ) {
+  //   var messageObject = [];
+  //   messages.forEach(message => {
+  //     var newMessage = {
+  //       Id: message.transactionID,
+  //       MessageBody: JSON.stringify(message)
+  //     };
+  //   });
+  //   return new Promise ((resolve, revoke) => {
+  //     var params = {
+  //       SendMessageBatchRequestEntry: messageObject,
+  //       QueueUrl: this.url
+  //     };
+  //     sqs.SendMessageBatch(params, (err, response) => {
+  //       if (err) {
+  //         revoke (err);
+  //       } else {
+  //         resolve (response);
+  //       }
+  //     });
+  //   });
+  // }
 
   createQueue () {
     var queue = Consumer.create({
