@@ -9,12 +9,12 @@ const { winston, trackTime } = require('../elasticsearch/winston');
 const { queueToBankServices, queueToTransactions, queueToBankDeposits } = require ('./queue.js');
 
 var parseBodyOfMessage = function (message) {
-  console.log(message);
   try {
     message = JSON.parse(message.Body);
   } catch (err) {
     message = (message);
   }
+  // console.log(message);
   return message;
 };
 
@@ -105,7 +105,7 @@ var actionsForBankDeposits = function (data) {
       tracker ({
         stage: 'Updated Database',
       });
-      console.log('queueToTransactions', queueToTransactions)
+      console.log('queueToTransactions', queueToTransactions);
       return queueToTransactions.send(transactionID, status);
       // return sendMessageToTransactionsQueue(transactionID, status);
     })
