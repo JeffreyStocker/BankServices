@@ -4,7 +4,7 @@ const express = require('express');
 const queue = require ('../queues/queue.js');
 
 if (!!process.env.PORT) {
-  const dotenv= require('dotenv').config();
+  const dotenv = require('dotenv').config();
 }
 
 var app = express();

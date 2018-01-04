@@ -43,7 +43,7 @@ module.exports.trackTime = function (transactionID, route, staticData = {}, init
     };
 
     var data = Object.assign(totalData, dataToSendToWinton, staticData );
-    console.log(data)
+    console.log(data);
     if (level = 'info') {
       winstonCall.info(data);
     } else if (level = 'warn') {
