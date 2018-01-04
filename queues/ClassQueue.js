@@ -28,13 +28,9 @@ class Queue {
       // },
       // handleEmptyMessages: options.handleEmptyMessages || function () {}.bind(this)
     };
-    for (var i = 0; i < this.options.count; i++) {
-      this.pushQueue();
-    }
-    if (start === true ) {
-      this.start();
-    }
+    this.pushQueue(this.options.count, this.options.start);
   }
+
 
   start () {
     this.running = true;
@@ -42,12 +38,15 @@ class Queue {
       queue.start();
     });
   }
+
+
   stop () {
     this.false;
     this.queues.forEach(queue => {
       queue.stop();
     });
   }
+
 
   setRunningNum(number = 0) {
     number > this.queues.count ? number = this.queues.count : null;
@@ -59,6 +58,50 @@ class Queue {
       this.queues[i].stop();
     }
   }
+
+
+  createQueue () {
+    var queue = Consumer.create({
+      queueUrl: this.url,
+      region: this.options.region,
+      batchSize: this.options.batchsize,
+      handleMessage: this.handleMessages
+    });
+
+    queue.on('error', err => {
+      console.log('Error Retrieving SQS Message', err);
+      winston.error('Error retrieving Info', err);
+    });
+    queue.on('empty', function () {
+      console.log('queue is empty');
+      // winston.info('queue is empty');
+      // this.options.handleEmptyMessages();
+    });
+    return queue;
+  }
+
+
+  pushQueue(count = 1, start = false) {
+    for (var i = 0; i < count; i ++) {
+      var queue = this.createQueue();
+      this.queues.push(queue);
+      start && queue.start();
+    }
+  }
+
+
+  popQueue (count = 1) {
+    for (var i = 0; i < count; i ++) {
+      var queue = this.queues.pop();
+      queue.stop();
+    }
+  }
+
+
+  count () {
+    return this.queues.length;
+  }
+
 
   send (message = {}) {
     return new Promise ((resolve, revoke) => {
@@ -99,45 +142,6 @@ class Queue {
   //     });
   //   });
   // }
-
-  createQueue () {
-    var queue = Consumer.create({
-      queueUrl: this.url,
-      region: this.options.region,
-      batchSize: this.options.batchsize,
-      handleMessage: this.handleMessages
-    });
-
-    queue.on('error', err => {
-      console.log('Error Retrieving SQS Message', err);
-      winston.error('Error retrieving Info', err);
-    });
-    queue.on('empty', function () {
-      console.log('queue is empty');
-      // winston.info('queue is empty');
-      // this.options.handleEmptyMessages();
-    });
-    return queue;
-  }
-
-  pushQueue(count = 1, start = true) {
-    for (var i = 0; i < count; i ++) {
-      var queue = this.createQueue();
-      queue.start();
-      this.queues.push(queue);
-    }
-  }
-
-  popQueue (count = 1) {
-    for (var i = 0; i < count; i ++) {
-      var queue = this.queues.pop();
-      queue.stop();
-    }
-  }
-
-  count () {
-    return this.queues.length;
-  }
 
   // changeHandleMessage (func) {
   //   this.options.handleMessage = func;
