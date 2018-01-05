@@ -1,5 +1,5 @@
 if (!process.env.PORT) {
-  var dotenv= require('dotenv').config();
+  var dotenv = require('dotenv').config();
 }
 
 const { winston } = require('../elasticsearch/winston');
@@ -100,7 +100,7 @@ var findByTransactionID_cb = function (transactionID, callback) {
 
 var findByTransactionID = function (transactionID) {
   return new Promise ((resolve, revoke) => {
-    if (!transactionID || typeof transactionID !== 'number') { revoke ('transaction ID missing or not a number') }
+    if (!transactionID || typeof transactionID !== 'number') { revoke ('transaction ID missing or not a number'); }
     pool.query(
       'SELECT * from transactions \
       where transactions.id_transaction =' + transactionID,
@@ -154,6 +154,22 @@ var retrieveAllUsersAndBank = function () {
 };
 
 
+module.exports.returnNextTransactionID = function () {
+  return new Promise ((resolve, revoke) => {
+    pool.query(
+      'SELECT id_transaction from transactions \
+      where id_transaction = (select max(id_transaction) from transactions);'
+      , (err, res) => {
+        if (err) {
+          revoke (err);
+        } else {
+          // console.log(res.rows[0].id_transaction);
+          resolve (res.rows[0].id_transaction);
+        }
+      });
+  });
+};
+
 
 module.exports.pool = pool;
 module.exports.createTransaction = createTransaction;
@@ -161,3 +177,5 @@ module.exports.updateTransactionStatus = updateTransactionStatus;
 module.exports.findByUserID = findByUserID;
 module.exports.findByTransactionID = findByTransactionID;
 module.exports.retrieveAllUsersAndBank = retrieveAllUsersAndBank;
+
+console.log(module.exports.returnNextTransactionIDSync());
