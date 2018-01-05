@@ -2,10 +2,15 @@ var AWS = require('aws-sdk');
 const env = require('dotenv').config();
 var axios = require('axios');
 var url = 'http://localhost:8000/';
+var db = require ('../../database/databasePG');
 
 var fake = false;
 var destintationURL = process.env.SQS_BankServices;
-var count = 500;
+var count = 10;
+
+
+
+
 if (fake === true) {
   AWS.config.update({
     sqs_endpoint: 'localhost',
@@ -103,25 +108,28 @@ var sqsMockFunction = function () {
   });
 };
 
-
 var runMessages = function () {
-  console.log('300');
-  for (var i = 0; i < count; i ++) {
-    if (fake === false ) {
-      sqsMockFunction();
-    } else {
-      localMockFunction();
-    }
-  }
+  db.returnNextTransactionID()
+    .then (startNumber => {
+      startNumber++;
+
+      console.log('start');
+      var endNumber = startNumber + count;
+      console.log('startNumber', startNumber);
+      console.log('endNumber', endNumber);
+      for (var i = startNumber; i < endNumber; i ++) {
+        if (fake === false ) {
+          sqsMockFunction();
+          // console.log('i', i);
+        } else {
+          localMockFunction();
+        }
+      }
+      console.log('finish');
+    });
 };
 
 
-
-
-
-
-
-
-
+runMessages();
 // var set = setInterval (runMessages, 2000 );
-var set = setTimeout (runMessages, 2000 );
+// var set = setTimeout (runMessages, 2000 );
