@@ -43,9 +43,10 @@ db.connect()
   });
 
 
-queueToBankServices.pushQueue(500);
+queueToBankServices.pushQueue(5);
 queueToBankServices.start();
 
+queueToBankDeposits.start();
 
 // process.on('uncaughtException', (error) => {
 //   console.log ('UncaughtError!!', error);
@@ -61,4 +62,35 @@ startElasticSearchWithWinston();
 winston.info({
   type: 'system',
   message: 'Server Start'
+});
+
+
+// For app termination
+process.on( 'SIGINT', function() {
+  console.log( '\nGracefully shutting down from SIGINT (Ctrl-C)' );
+  // some other closing procedures go here
+  queueToBankServices.stop();
+  queueToBankDeposits.stop();
+  queueToTransactions.stop();
+  db.end();
+
+  setTimeout( () => {
+    process.exit();
+  }, 5000);
+});
+
+// For nodemon restarts
+process.once('SIGUSR2', function () {
+  // gracefulShutdown('nodemon restart', function () {
+  //   process.kill(process.pid, 'SIGUSR2');
+  // });
+  process.exit( );
+});
+
+// For Heroku app termination
+process.on('SIGTERM', function() {
+  // gracefulShutdown('Heroku app termination', function () {
+  //   process.exit(0);
+  // });
+  process.exit( );
 });
