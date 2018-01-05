@@ -78,7 +78,7 @@ var actionsForBankDeposits = function (data) {
   var data = parseBodyOfMessage(data);
   var transactionID = data.transactionID;
 
-  var tracker = trackTime(data.transactionID, 'confirmation', {type: 'BankDeposits'}, {
+  var tracker = trackTime(data.transactionID, 'confirmation', {route: 'BankDeposits'}, {
     stage: 'Received from Bank Deposits Queue',
   });
 
