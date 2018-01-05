@@ -92,9 +92,10 @@ var localMockFunction = function () {
     });
 };
 
-var sqsMockFunction = function () {
+var sqsMockFunction = function (i) {
   module.exports.sendMessageToQueue({
-    transactionID: Math.floor((Math.random() * (2147483640 - 10000001)) + 10000001),
+    // transactionID: Math.floor((Math.random() * (2147483640 - 10000001)) + 10000001),
+    transactionID: i,
     route: Math.floor((Math.random() * 2) + 1) === 1 ? 'cashout' : 'withdraw',
     userID: Math.floor((Math.random() * 2147483640) + 10000001),
     amount: Math.floor(Math.random() * 300000) / 100
@@ -119,7 +120,7 @@ var runMessages = function () {
       console.log('endNumber', endNumber);
       for (var i = startNumber; i < endNumber; i ++) {
         if (fake === false ) {
-          sqsMockFunction();
+          sqsMockFunction(i);
           // console.log('i', i);
         } else {
           localMockFunction();
