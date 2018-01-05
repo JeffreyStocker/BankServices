@@ -177,5 +177,3 @@ module.exports.updateTransactionStatus = updateTransactionStatus;
 module.exports.findByUserID = findByUserID;
 module.exports.findByTransactionID = findByTransactionID;
 module.exports.retrieveAllUsersAndBank = retrieveAllUsersAndBank;
-
-console.log(module.exports.returnNextTransactionIDSync());
