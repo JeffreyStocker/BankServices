@@ -19,7 +19,7 @@ var parseBodyOfMessage = function (message) {
 };
 
 
-var action = function (actionData) {
+var actionBankServices = function (actionData) {
   var status;
   actionData = parseBodyOfMessage(actionData);
   var tracker = trackTime(actionData.transactionID, actionData.route, {type: 'message'}, {
@@ -124,5 +124,5 @@ var actionsForBankDeposits = function (data) {
 };
 
 
-module.exports.action = action;
+module.exports.actionBankServices = actionBankServices;
 module.exports.actionsForBankDeposits = actionsForBankDeposits;

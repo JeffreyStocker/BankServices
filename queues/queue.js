@@ -1,7 +1,7 @@
 var Queue = require ('./ClassQueue.js');
 
 var { winston } = require ('../elasticsearch/winston');
-var { action, actionsForBankDeposits } = require('./actions.js');
+var { actionBankServices, actionsForBankDeposits } = require('./actions.js');
 
 if (!process.env.PORT) {
   var dotenv = require('dotenv').config();
@@ -20,17 +20,20 @@ if (process.env.USEMOCKSQS === 'false') {
 }
 
 module.exports.queueToBankServices = new Queue(SQS_BankServices, (message, done) => {
-  action(message);
+  // console.log('BankServices');
+  actionBankServices(message);
   return done();
 });
 // module.exports.queueToBankServices.pushQueue(2);
 // console.log(queueToBankServices.count());
 
 module.exports.queueToTransactions = new Queue (SQS_TRANSACTION_URL, (message, done) => {
+  // console.log('Transactions');
   // return done();
 });
 
 module.exports.queueToBankDeposits = new Queue(SQS_CASHOUT_URL, (message, done) => {
+  // console.log('BankDeposits');
   actionsForBankDeposits(message);
   return done();
 });
